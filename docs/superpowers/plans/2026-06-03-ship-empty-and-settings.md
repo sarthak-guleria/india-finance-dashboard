@@ -16,7 +16,7 @@
 - Commit style matches existing repo: short imperative subject, body explains why. Always include `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>`.
 
 **Critical implementation notes:**
-- **CONFIG keys read order:** `const CONFIG = {...}` declaration is at line 1276. The aliases at lines 1340-1349 (`HOLDINGS`, `BANK_IDFC`, `BANK_KOTAK`, `ACTUAL_STAKING_USD`, `COMPARE_OPENING`, `SALARY_INR`, `EXPENSES_INR`) derive from CONFIG synchronously after the literal closes. The user-settings deep-merge IIFE **must run between** the CONFIG declaration (line 1335 closing brace) and the alias derivations (line 1340).
+- **CONFIG keys read order:** `const CONFIG = {...}` declaration is at line 1276. The aliases at lines 1340-1349 (`HOLDINGS`, `BANK_HDFC`, `BANK_Canara`, `ACTUAL_STAKING_USD`, `COMPARE_OPENING`, `SALARY_INR`, `EXPENSES_INR`) derive from CONFIG synchronously after the literal closes. The user-settings deep-merge IIFE **must run between** the CONFIG declaration (line 1335 closing brace) and the alias derivations (line 1340).
 - **IDX init order:** `IDX` is currently declared at line 1355 — AFTER the aliases. Per the spec's three options, this plan uses option (a): move the `IDX` declaration to immediately AFTER `CONFIG` (and before the IIFE), so the same IIFE can merge into IDX. No downstream code references IDX between CONFIG and where it currently lives — verified by grep on the line range 1336-1354.
 - **Percentage display vs. decimal storage:** `bankInterest.tierN.rate` and `tax.presumptiveProfitRate` are stored as decimals (0.025 = 2.5%). The Settings form shows percentages. Conversion happens at form read/write boundary — see Tasks 6 and 7.
 - **IDX values are already in percentage points** (12, 10), not decimals — pass through without conversion.
@@ -77,7 +77,7 @@ const CONFIG = {
   monthlyNetSalary: 80000,
   defaultMonthlyExpenses: 30000,   // user can override in UI; persists to localStorage
 
-  // --- Crypto holdings (Kraken-style spot; works with any exchange that supports these tokens) ---
+  // --- Crypto holdings (Exchange-style spot; works with any exchange that supports these tokens) ---
   holdings: {
     eth:    0.5,
     sol:    2,
@@ -87,7 +87,7 @@ const CONFIG = {
   },
   monthlyStakingUSD: 25,
 
-  // --- IDFC-style tiered interest (edit if your bank uses different tiers) ---
+  // --- HDFC-style tiered interest (edit if your bank uses different tiers) ---
   bankInterest: {
     tier1: { upTo: 300000,    rate: 0.025 },  // 2.5% on first ₹3L
     tier2: { upTo: 25000000,  rate: 0.065 },  // 6.5% ₹3L–₹25Cr
@@ -125,7 +125,7 @@ const CONFIG = {
   },
   monthlyStakingUSD: 0,
 
-  // --- IDFC-style tiered interest. Edit in the Settings tab (Advanced section). ---
+  // --- HDFC-style tiered interest. Edit in the Settings tab (Advanced section). ---
   bankInterest: {
     tier1: { upTo: 300000,    rate: 0.025 },  // 2.5% on first ₹3L
     tier2: { upTo: 25000000,  rate: 0.065 },  // 6.5% ₹3L–₹25Cr
@@ -271,7 +271,7 @@ Expected:
 1338 // CONSTANTS — derived from CONFIG (do not edit; edit CONFIG above)
 1339 // ══════════════════════════════════════════
 1340 const HOLDINGS           = CONFIG.holdings;
-1341 const BANK_IDFC          = CONFIG.banks.primary.balance;
+1341 const BANK_HDFC          = CONFIG.banks.primary.balance;
 ... (aliases)
 1352 const LIVE = { usdInr:84.0, eth:2017.04, sol:82.33, loaded:false, lastFetch:null };
 1353
@@ -290,8 +290,8 @@ Use Edit. Replace:
 // CONSTANTS — derived from CONFIG (do not edit; edit CONFIG above)
 // ══════════════════════════════════════════
 const HOLDINGS           = CONFIG.holdings;
-const BANK_IDFC          = CONFIG.banks.primary.balance;
-const BANK_KOTAK         = CONFIG.banks.secondary.balance;
+const BANK_HDFC          = CONFIG.banks.primary.balance;
+const BANK_Canara         = CONFIG.banks.secondary.balance;
 const ACTUAL_STAKING_USD = CONFIG.monthlyStakingUSD;
 const COMPARE_OPENING    = CONFIG.comparisonOpeningBalance;
 const SALARY_INR         = CONFIG.monthlyNetSalary;
@@ -349,8 +349,8 @@ const IDX = { nifty:12, sp:10 };
 // CONSTANTS — derived from CONFIG (do not edit; edit CONFIG above)
 // ══════════════════════════════════════════
 const HOLDINGS           = CONFIG.holdings;
-const BANK_IDFC          = CONFIG.banks.primary.balance;
-const BANK_KOTAK         = CONFIG.banks.secondary.balance;
+const BANK_HDFC          = CONFIG.banks.primary.balance;
+const BANK_Canara         = CONFIG.banks.secondary.balance;
 const ACTUAL_STAKING_USD = CONFIG.monthlyStakingUSD;
 const COMPARE_OPENING    = CONFIG.comparisonOpeningBalance;
 const SALARY_INR         = CONFIG.monthlyNetSalary;
@@ -397,7 +397,7 @@ git commit -m "$(cat <<'EOF'
 Add applyUserSettings IIFE; move IDX above CONFIG aliases
 
 The IIFE runs immediately after CONFIG (and the moved-up IDX) and
-before the legacy aliases (HOLDINGS, BANK_IDFC, etc.) derive. If a
+before the legacy aliases (HOLDINGS, BANK_HDFC, etc.) derive. If a
 user_settings_v1 value exists in localStorage, it's deep-merged into
 CONFIG and IDX so all downstream code reads the user's values.
 Empty/missing returns a no-op so defaults stay in place.
@@ -882,7 +882,7 @@ Then in console:
 ```js
 localStorage.setItem('user_settings_v1', JSON.stringify({
   ownerName: "Real User",
-  banks: { primary: { name: "HDFC", balance: 250000 }, secondary: { name: "Kotak", balance: 50000 } },
+  banks: { primary: { name: "HDFC", balance: 250000 }, secondary: { name: "Canara", balance: 50000 } },
   monthlyNetSalary: 90000,
   holdings: { eth: 1.2, sol: 5, usdc: 2000, usdt: 0, usdCash: 500 },
   monthlyStakingUSD: 40,
@@ -1170,7 +1170,7 @@ hardcoded in `CONFIG` (plus the `IDX` index-return assumptions).
 Persists to `localStorage['user_settings_v1']`. On page load, an IIFE
 declared immediately after `CONFIG` (and the moved-up `IDX`) deep-merges
 the saved settings into both objects BEFORE any aliases (`HOLDINGS`,
-`BANK_IDFC`, etc.) derive their values — so all downstream code reads
+`BANK_HDFC`, etc.) derive their values — so all downstream code reads
 post-merge values without modification. After Save, the user is asked
 to reload; live in-place mutation of every chart/KPI was avoided in
 favor of reload-once simplicity.
@@ -1326,7 +1326,7 @@ Open devtools console. Run `Object.keys(localStorage).forEach(k=>localStorage.re
 Click Settings. Enter:
 - Owner: "Real Name"
 - Primary: "HDFC", 250000
-- Secondary: "Kotak", 50000
+- Secondary: "Canara", 50000
 - Salary: 100000
 - ETH 1.5, SOL 3, USDC 1500, USDT 0, USD cash 200
 - Monthly staking 35
