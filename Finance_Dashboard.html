@@ -1334,6 +1334,39 @@ const CONFIG = {
   },
 };
 
+// Index returns (assumed annual %). Declared before aliases so the
+// applyUserSettings IIFE below can merge user overrides into both
+// CONFIG and IDX in one place.
+const IDX = { nifty:12, sp:10 };
+
+// ══════════════════════════════════════════
+// Apply user_settings_v1 overrides
+// On page load, deep-merge any saved settings into CONFIG and IDX
+// BEFORE the legacy aliases below derive their values. The Settings
+// tab writes to localStorage['user_settings_v1']; if absent, the IIFE
+// is a no-op and the ship-empty defaults remain.
+// ══════════════════════════════════════════
+(function applyUserSettings() {
+  let stored;
+  try { stored = JSON.parse(localStorage.getItem('user_settings_v1') || 'null'); }
+  catch (e) { stored = null; }
+  if (!stored) return;
+  function deepMerge(target, source) {
+    for (const k in source) {
+      if (source[k] && typeof source[k] === 'object' && !Array.isArray(source[k])) {
+        if (!target[k]) target[k] = {};
+        deepMerge(target[k], source[k]);
+      } else {
+        target[k] = source[k];
+      }
+    }
+  }
+  // CONFIG keys (everything except idx)
+  const { idx, ...configOverrides } = stored;
+  deepMerge(CONFIG, configOverrides);
+  if (idx) Object.assign(IDX, idx);
+})();
+
 // ══════════════════════════════════════════
 // CONSTANTS — derived from CONFIG (do not edit; edit CONFIG above)
 // ══════════════════════════════════════════
@@ -1350,9 +1383,6 @@ const EXPENSES_INR = getMonthlyExpenses(); // kept for initial projection table;
 
 // Live state (defaults, updated by API)
 const LIVE = { usdInr:84.0, eth:2017.04, sol:82.33, loaded:false, lastFetch:null };
-
-// Index rates (editable)
-const IDX = { nifty:12, sp:10 };
 
 // ══════════════════════════════════════════
 // TIERED IDFC INTEREST FORMULA
