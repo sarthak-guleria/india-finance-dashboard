@@ -3382,6 +3382,57 @@ function settingsPopulate() {
   v('setTaxPresumptive',    +(CONFIG.tax.presumptiveProfitRate * 100).toFixed(4));
 }
 
+// Read current form values, persist to localStorage['user_settings_v1'],
+// and prompt the user to reload (which re-runs applyUserSettings to apply
+// the saved values across the whole dashboard).
+function settingsSave() {
+  const n  = id => parseFloat(document.getElementById(id).value) || 0;
+  const s  = id => (document.getElementById(id).value || '').trim();
+  const p  = id => (parseFloat(document.getElementById(id).value) || 0) / 100;
+
+  const settings = {
+    ownerName: s('setOwnerName') || 'Your Name',
+    banks: {
+      primary:   { name: s('setPrimaryBankName')   || 'Primary Bank',   balance: n('setPrimaryBankBal') },
+      secondary: { name: s('setSecondaryBankName') || 'Secondary Bank', balance: n('setSecondaryBankBal') }
+    },
+    monthlyNetSalary: n('setSalary'),
+    holdings: {
+      eth:     n('setEth'),
+      sol:     n('setSol'),
+      usdc:    n('setUsdc'),
+      usdt:    n('setUsdt'),
+      usdCash: n('setUsdCash')
+    },
+    monthlyStakingUSD: n('setStakingUsd'),
+    comparisonOpeningBalance: n('setComparisonBal'),
+    bankInterest: {
+      tier1: { upTo: n('setBiTier1Cap'), rate: p('setBiTier1Rate') },
+      tier2: { upTo: n('setBiTier2Cap'), rate: p('setBiTier2Rate') },
+      tier3: {                            rate: p('setBiTier3Rate') }
+    },
+    tax: { presumptiveProfitRate: p('setTaxPresumptive') },
+    idx: { nifty: n('setIdxNifty'), sp: n('setIdxSp') }
+  };
+
+  const status = document.getElementById('setStatus');
+  try {
+    localStorage.setItem('user_settings_v1', JSON.stringify(settings));
+    status.className = 'set-status ok';
+    status.innerHTML = '✓ Saved. <a href="#" onclick="location.reload();return false;" style="color:var(--blue);text-decoration:none;font-weight:600">Reload now</a> to apply.';
+  } catch (e) {
+    status.className = 'set-status err';
+    status.textContent = "Couldn't save — your browser blocked storage.";
+  }
+}
+
+// Discard unsaved edits and re-populate inputs from current effective values.
+function settingsCancel() {
+  settingsPopulate();
+  const s = document.getElementById('setStatus');
+  if (s) { s.textContent = 'Changes discarded.'; s.className = 'set-status'; }
+}
+
 // ══════════════════════════════════════════
 // MARKETS TAB (TradingView)
 // ══════════════════════════════════════════
