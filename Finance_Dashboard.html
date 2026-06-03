@@ -673,18 +673,13 @@ body:not(.privacy) .holding-inr { transition: filter 0.25s ease; }
       </div>
     </div>
 
-    <!-- IDFC tiered rate info -->
+    <!-- Tiered interest rate info — rendered from CONFIG.bankInterest by renderInterestTable() -->
     <div class="card mb14">
-      <div class="card-hd"><div class="card-title">Primary Bank — Tiered Interest Rate Structure (w.e.f. 21 Apr 2026)</div></div>
+      <div class="card-hd"><div class="card-title" id="interestCardTitle">Primary Bank — Tiered Interest Rate Structure</div></div>
       <div class="g2" style="gap:20px">
         <table class="slab-tbl" style="flex:1">
           <thead><tr><th>Balance Slab</th><th>Rate (p.a.)</th><th style="text-align:right">Monthly Interest on Your Balance</th></tr></thead>
-          <tbody>
-            <tr><td>First ₹3 Lakhs</td><td style="color:var(--muted)">2.50%</td><td style="text-align:right;color:var(--muted)">₹625 / month</td></tr>
-            <tr><td style="font-weight:600">₹3 Lakhs – ₹25 Crores <span style="color:var(--green);font-size:10px">← Your balance</span></td><td style="color:var(--green);font-weight:700">6.50%</td><td style="text-align:right;font-weight:700">₹70,188 / month</td></tr>
-            <tr><td>Above ₹25 Crores</td><td style="color:var(--muted)">5.00%</td><td style="text-align:right;color:var(--muted)">N/A</td></tr>
-            <tr style="background:var(--s2)"><td style="font-weight:700">Total (current month est.)</td><td></td><td style="text-align:right;font-weight:700;color:var(--green)" id="totalPassiveRow">≈ ₹0 / month</td></tr>
-          </tbody>
+          <tbody id="slabTblBody"></tbody>
         </table>
         <div style="flex:1">
           <div class="stat-label" style="margin-bottom:8px">Actual vs Model</div>
@@ -2422,12 +2417,61 @@ function initProjections() {
   // Seed monthly expenses from localStorage
   const expInp = document.getElementById('fireExpenses');
   if(expInp) expInp.value = getMonthlyExpenses();
+  renderInterestTable();
   rebuildProjectionChart();
   rebuildInterestProjChart();
   rebuildIndexCompareChart();
   buildProjectionTable();
   buildFireProjection();
   buildUsdAppreciation();
+}
+
+// Render the Primary Bank tiered-interest slab table from current
+// CONFIG.bankInterest + the primary bank balance. Highlights whichever
+// tier the user's balance falls in; per-tier monthly interest reflects
+// the actual amount accrued in that tier given the balance.
+function renderInterestTable() {
+  const tbody = document.getElementById('slabTblBody');
+  if (!tbody) return;
+  const bal = BANK_IDFC;
+  const t1  = CONFIG.bankInterest.tier1;
+  const t2  = CONFIG.bankInterest.tier2;
+  const t3  = CONFIG.bankInterest.tier3;
+
+  // Indian slab formatter: ≥ 1 Cr → "₹X Crores", else "₹X Lakhs"
+  const fmtSlab = n => n >= 1e7
+    ? '₹' + (+(n/1e7).toFixed(2)) + ' Crores'
+    : '₹' + (+(n/1e5).toFixed(2)) + ' Lakhs';
+  const fmtINR  = n => '₹' + Math.round(n).toLocaleString('en-IN');
+
+  // Per-tier monthly interest at the actual balance
+  const m1 = Math.min(bal, t1.upTo)                                  * t1.rate / 12;
+  const m2 = Math.min(Math.max(bal - t1.upTo, 0), t2.upTo - t1.upTo) * t2.rate / 12;
+  const m3 = Math.max(bal - t2.upTo, 0)                              * t3.rate / 12;
+
+  const userTier = bal <= t1.upTo ? 1 : (bal <= t2.upTo ? 2 : 3);
+
+  const tiers = [
+    { idx:1, label: 'First ' + fmtSlab(t1.upTo),                 rate: t1.rate, monthly: m1 },
+    { idx:2, label: fmtSlab(t1.upTo) + ' – ' + fmtSlab(t2.upTo), rate: t2.rate, monthly: m2 },
+    { idx:3, label: 'Above ' + fmtSlab(t2.upTo),                 rate: t3.rate, monthly: m3 }
+  ];
+
+  const html = tiers.map(r => {
+    const isHere = r.idx === userTier;
+    const monthly = r.monthly > 0 ? fmtINR(r.monthly) + ' / month' : (isHere ? '₹0 / month' : 'N/A');
+    const labelStyle  = isHere ? 'font-weight:600' : '';
+    const rateStyle   = isHere ? 'color:var(--green);font-weight:700' : 'color:var(--muted)';
+    const monthStyle  = isHere ? 'text-align:right;font-weight:700' : 'text-align:right;color:var(--muted)';
+    const indicator   = isHere ? ' <span style="color:var(--green);font-size:10px">← Your balance</span>' : '';
+    return `<tr><td style="${labelStyle}">${r.label}${indicator}</td><td style="${rateStyle}">${(r.rate*100).toFixed(2)}%</td><td style="${monthStyle}">${monthly}</td></tr>`;
+  }).join('') +
+    `<tr style="background:var(--s2)"><td style="font-weight:700">Total (current month est.)</td><td></td><td style="text-align:right;font-weight:700;color:var(--green)" id="totalPassiveRow">≈ ${fmtINR(m1+m2+m3)} / month</td></tr>`;
+
+  tbody.innerHTML = html;
+
+  const titleEl = document.getElementById('interestCardTitle');
+  if (titleEl) titleEl.textContent = (CONFIG.banks.primary.name || 'Primary Bank') + ' — Tiered Interest Rate Structure';
 }
 
 function rebuildProjectionChart() {
