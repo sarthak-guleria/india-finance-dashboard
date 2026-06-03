@@ -51,7 +51,7 @@ hardcoded in `CONFIG` (plus the `IDX` index-return assumptions).
 Persists to `localStorage['user_settings_v1']`. On page load, an IIFE
 declared immediately after `CONFIG` (and the moved-up `IDX`) deep-merges
 the saved settings into both objects BEFORE any aliases (`HOLDINGS`,
-`BANK_IDFC`, etc.) derive their values — so all downstream code reads
+`BANK_Bank1`, etc.) derive their values — so all downstream code reads
 post-merge values without modification. After Save, the user is asked
 to reload; live in-place mutation of every chart/KPI was avoided in
 favor of reload-once simplicity.
@@ -127,16 +127,16 @@ const CONFIG = {
 };
 ```
 
-Immediately after CONFIG, the legacy identifiers (`HOLDINGS`, `BANK_IDFC`,
-`BANK_KOTAK`, `SALARY_INR`, `ACTUAL_STAKING_USD`, `COMPARE_OPENING`) are
+Immediately after CONFIG, the legacy identifiers (`HOLDINGS`, `BANK_Bank1`,
+`BANK_bank2`, `SALARY_INR`, `ACTUAL_STAKING_USD`, `COMPARE_OPENING`) are
 re-declared as aliases reading from CONFIG. This means downstream code
 (~230 references) keeps working unchanged.
 
 ## Tiered bank interest
 
-`calcIDFCInterest(balance)` is the canonical interest calculator. The
+`calcBank1Interest(balance)` is the canonical interest calculator. The
 slab boundaries and rates read from `CONFIG.bankInterest`. The function
-name retains "IDFC" for historical reasons but is fully generic — any
+name retains "Bank1" for historical reasons but is fully generic — any
 tiered savings rate can be expressed by editing CONFIG.
 
 ## Dynamic / user-editable data (localStorage)
@@ -201,7 +201,7 @@ of:
 
 `buildProjection()` runs a 13-month forward simulation:
 
-- **Income:** `SALARY_INR + calcIDFCInterest(bank) + stakingINR()`.
+- **Income:** `SALARY_INR + calcBank1Interest(bank) + stakingINR()`.
 - **Expense:** `getMonthlyExpenses()` (reads localStorage).
 - **Exchange portfolio:** accumulates staking separately.
 
