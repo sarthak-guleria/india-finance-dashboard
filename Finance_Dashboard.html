@@ -489,8 +489,8 @@ body:not(.privacy) .holding-inr { transition: filter 0.25s ease; }
       </div>
       <div class="kpi-body">
         <div class="kpi-label">Bank Balances</div>
-        <div class="kpi-value">₹1.33 Cr</div>
-        <div class="kpi-meta">Primary + Secondary · tiered interest</div>
+        <div class="kpi-value" id="kpiBank">₹0.00 Cr</div>
+        <div class="kpi-meta" id="kpiBankSub">Primary + Secondary · tiered interest</div>
       </div>
     </div>
     <div class="kpi-card kraken">
@@ -1745,6 +1745,11 @@ function updateLiveValues() {
   setText('kpiKrakenSub', '₹' + (kINR/1e5).toFixed(1) + ' L · ETH $' + Math.round(LIVE.eth) + ' · SOL $' + LIVE.sol.toFixed(0));
   setText('kpiPassive',   INR(lastInterest + stk));
   setText('kpiPassiveSub','Bank ₹' + Math.round(lastInterest/1000) + 'K + Staking ' + INR(stk));
+  const customBanksN = (typeof customBankINR==='function' ? customBankINR() : 0);
+  const bankTotal    = BANK_IDFC + BANK_KOTAK + customBanksN;
+  const customBanksC = (typeof CUSTOM_ACCS!=='undefined') ? CUSTOM_ACCS.filter(a=>a.type==='bank').length : 0;
+  setText('kpiBank',    '₹' + (bankTotal/1e7).toFixed(2) + ' Cr');
+  setText('kpiBankSub', 'Primary + Secondary' + (customBanksC ? ' + ' + customBanksC + ' more' : '') + ' · tiered interest');
 
   // Holdings
   setText('hEthQty',  HOLDINGS.eth.toFixed(4) + ' ETH · $' + Math.round(LIVE.eth) + '/ETH');
