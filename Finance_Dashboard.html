@@ -1,0 +1,3032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F4EE;--card:#FFFFFF;--sidebar:#FFFFFF;--s2:#F2EFE9;
+  --border:#E5E1D8;--border2:#CBC7BE;--text:#1C1917;--muted:#78716C;
+  --faint:#A8A29E;--very-faint:#D6D0C8;
+  --blue:#1D4ED8;--blue-dim:rgba(29,78,216,0.08);
+  --green:#15803D;--green-dim:rgba(21,128,61,0.08);
+  --red:#DC2626;--red-dim:rgba(220,38,38,0.08);
+  --amber:#D97706;--amber-dim:rgba(217,119,6,0.08);
+  --purple:#7C3AED;--purple-dim:rgba(124,58,237,0.08);
+  --teal:#0F766E;--orange:#C2410C;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.07),0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.06),0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.08),0 2px 8px rgba(0,0,0,0.04);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--s2)}
+::-webkit-scrollbar-thumb{background:var(--very-faint);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+
+/* SIDEBAR */
+.sidebar{width:240px;min-height:100vh;position:fixed;left:0;top:0;bottom:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;box-shadow:var(--shadow-sm)}
+.brand{padding:26px 22px 22px;border-bottom:1px solid var(--border)}
+.brand-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--blue) 0%,#3B82F6 100%);border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:13px;box-shadow:0 4px 14px rgba(29,78,216,0.3)}
+.brand-icon svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.2}
+.brand-name{font-size:14.5px;font-weight:700;letter-spacing:-0.3px;color:var(--text)}
+.brand-sub{font-size:11.5px;color:var(--faint);margin-top:2px}
+.nav{padding:14px 10px;flex:1;overflow-y:auto}
+.nav-label{font-size:10px;font-weight:700;color:var(--very-faint);text-transform:uppercase;letter-spacing:1.2px;padding:0 12px;margin:0 0 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--muted);transition:all 0.15s;margin-bottom:2px;user-select:none}
+.nav-item:hover{background:var(--s2);color:var(--text)}
+.nav-item.active{background:var(--blue-dim);color:var(--blue);font-weight:600}
+.nav-item svg{width:16px;height:16px;stroke:currentColor;stroke-width:1.8;fill:none;flex-shrink:0}
+.sidebar-footer{padding:18px 22px;border-top:1px solid var(--border)}
+.rate-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:4px}
+.rate-row strong{color:var(--text)}
+.rate-row svg{width:13px;height:13px;stroke:var(--faint);fill:none;stroke-width:2}
+.footer-note{font-size:11px;color:var(--very-faint)}
+.rate-live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:3px;animation:blink 2s infinite}
+
+/* MAIN */
+.main{margin-left:240px;flex:1;min-height:100vh;display:flex;flex-direction:column;min-width:0}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(247,244,238,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 32px;height:58px;display:flex;align-items:center;justify-content:space-between}
+.page-title{font-size:15px;font-weight:700;letter-spacing:-0.2px}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--muted)}
+.pill.live{color:var(--green);border-color:rgba(21,128,61,0.25);background:var(--green-dim)}
+.pill.live::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:22px 32px 0}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--shadow-sm);transition:box-shadow 0.2s,transform 0.2s;position:relative;overflow:hidden}
+.kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-card.nw::after{background:linear-gradient(90deg,var(--blue),#60A5FA)}
+.kpi-card.bank::after{background:linear-gradient(90deg,var(--green),#34D399)}
+.kpi-card.kraken::after{background:linear-gradient(90deg,var(--amber),#FCD34D)}
+.kpi-card.flow::after{background:linear-gradient(90deg,var(--purple),#A78BFA)}
+.kpi-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.kpi-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
+.kpi-icon.blue{background:var(--blue-dim);color:var(--blue)}
+.kpi-icon.green{background:var(--green-dim);color:var(--green)}
+.kpi-icon.amber{background:var(--amber-dim);color:var(--amber)}
+.kpi-icon.purple{background:var(--purple-dim);color:var(--purple)}
+.kpi-body{flex:1;min-width:0}
+.kpi-label{font-size:10.5px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:0.9px;margin-bottom:6px}
+.kpi-value{font-size:21px;font-weight:800;letter-spacing:-0.6px;line-height:1;color:var(--text);margin-bottom:5px;font-variant-numeric:tabular-nums}
+.kpi-meta{font-size:11.5px;color:var(--muted)}
+.kpi-meta .pos{color:var(--green);font-weight:600}
+.kpi-meta .neg{color:var(--red);font-weight:600}
+
+/* PAGES */
+.page{padding:22px 32px 48px;display:none}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow-sm)}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.card-title{font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.9px}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.span2{grid-column:span 2}
+.mb14{margin-bottom:14px}
+.mb20{margin-bottom:20px}
+
+/* ALERT */
+.alert{display:flex;align-items:center;gap:12px;background:rgba(217,119,6,0.06);border:1px solid rgba(217,119,6,0.2);border-radius:12px;padding:11px 16px;font-size:12.5px;color:#92400E;margin-bottom:16px}
+.alert-dot{width:7px;height:7px;background:var(--amber);border-radius:50%;flex-shrink:0;animation:blink 2s infinite}
+
+/* ACCOUNT ROWS */
+.acc-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.acc-row:first-child{padding-top:0}
+.acc-row:last-child{border-bottom:none;padding-bottom:0}
+.acc-avatar{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;letter-spacing:-0.5px}
+.acc-info{flex:1;min-width:0}
+.acc-name{font-size:13.5px;font-weight:600}
+.acc-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.acc-bal{font-size:14px;font-weight:700;white-space:nowrap}
+
+/* HOLDING ROWS */
+.holding-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)}
+.holding-row:first-child{padding-top:0}
+.holding-row:last-child{border-bottom:none;padding-bottom:0}
+.coin-badge{width:38px;height:38px;border-radius:10px;background:var(--s2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;flex-shrink:0}
+.holding-info{flex:1}
+.holding-name{font-size:13.5px;font-weight:600}
+.holding-qty{font-size:11.5px;color:var(--muted);margin-top:2px}
+.holding-right{text-align:right}
+.holding-inr{font-size:14px;font-weight:700}
+.holding-usd{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+/* STAT BOXES */
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow-sm)}
+.stat-label{font-size:10.5px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.9px;margin-bottom:7px}
+.stat-value{font-size:20px;font-weight:800;letter-spacing:-0.5px;font-variant-numeric:tabular-nums}
+.stat-sub{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+/* PROGRESS BARS */
+.prog-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.prog-label{font-size:12.5px;font-weight:500;width:130px;flex-shrink:0;color:var(--text)}
+.prog-track{flex:1;height:7px;background:var(--s2);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;transition:width 0.8s cubic-bezier(.4,0,.2,1)}
+.prog-val{font-size:12px;color:var(--muted);min-width:90px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* ASSUMPTION CARDS */
+.assume-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.assume-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow-sm);display:flex;gap:12px;align-items:center}
+.assume-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.assume-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.assume-label{font-size:10.5px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
+.assume-val{font-size:16px;font-weight:800;letter-spacing:-0.4px;color:var(--text)}
+.assume-note{font-size:11px;color:var(--faint);margin-top:2px}
+
+/* PROJECTION TABLE */
+.proj-tbl td,.proj-tbl th{font-size:12.5px;padding:9px 12px;border-bottom:1px solid var(--border)}
+.proj-tbl th{font-size:10.5px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px;background:var(--s2)}
+.proj-tbl td{font-variant-numeric:tabular-nums}
+.proj-tbl tr:last-child td{border-bottom:none}
+.proj-tbl tr:hover td{background:rgba(0,0,0,0.015)}
+.proj-tbl .is-projected td{color:var(--muted)}
+.proj-tbl .is-projected td:first-child{color:var(--text);font-style:italic}
+.proj-tbl .highlight td{background:var(--blue-dim)}
+.proj-tbl .num{text-align:right}
+.proj-tbl .pos{color:var(--green);font-weight:600}
+.proj-tbl .neg{color:var(--red);font-weight:600}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;border-radius:0 0 12px 12px}
+.tbl-inner{max-height:540px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{position:sticky;top:0;z-index:2}
+thead tr{background:var(--s2)}
+th{padding:10px 14px;text-align:left;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(29,78,216,0.025)}
+tbody tr.flagged td{background:rgba(217,119,6,0.05)}
+tbody tr.flagged:hover td{background:rgba(217,119,6,0.09)}
+.tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:0.2px;white-space:nowrap}
+.tag-income{background:var(--green-dim);color:var(--green)}
+.tag-expense{background:var(--red-dim);color:var(--red)}
+.tag-transfer{background:var(--purple-dim);color:var(--purple)}
+.pct-badge{display:inline-flex;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:600}
+
+/* TXN CONTROLS */
+.txn-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--faint);fill:none;stroke-width:2;pointer-events:none}
+input[type=text],input[type=number],input[type=date],select{background:var(--s2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:12.5px;outline:none;transition:border-color 0.18s,background 0.18s}
+input[type=text]{padding:7px 12px 7px 32px;width:220px}
+input[type=number],input[type=date]{padding:7px 12px;width:100%}
+select{padding:7px 12px;cursor:pointer}
+input:focus,select:focus{border-color:var(--blue);background:var(--card)}
+.txn-count{font-size:11.5px;color:var(--faint);margin-top:12px;text-align:right}
+
+/* PORTFOLIO TABLE */
+.ptbl td:nth-child(2),.ptbl td:nth-child(3),.ptbl td:nth-child(4){text-align:right;font-variant-numeric:tabular-nums}
+.ptbl th:nth-child(2),.ptbl th:nth-child(3),.ptbl th:nth-child(4){text-align:right}
+.asset-dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:8px}
+
+/* PASSIVE INCOME BANNER */
+.passive-banner{background:linear-gradient(135deg,var(--green-dim) 0%,rgba(21,128,61,0.04) 100%);border:1px solid rgba(21,128,61,0.2);border-radius:12px;padding:14px 18px;display:flex;gap:16px;align-items:center;margin-bottom:14px}
+.passive-banner-stat{flex:1;text-align:center}
+.passive-banner-stat .val{font-size:20px;font-weight:800;color:var(--green);letter-spacing:-0.5px}
+.passive-banner-stat .lbl{font-size:11px;color:var(--muted);margin-top:3px}
+.passive-divider{width:1px;background:rgba(21,128,61,0.2);align-self:stretch}
+
+/* DISCLAIMER */
+.disclaimer{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:11.5px;color:var(--faint);margin-top:14px}
+
+/* FORM STYLES */
+.form-section{background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:10.5px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px}
+.btn{border:none;border-radius:10px;padding:8px 18px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:opacity 0.15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{opacity:0.85}
+.btn-danger{background:var(--red-dim);color:var(--red);padding:4px 10px;font-size:12px;border-radius:7px;border:none;font-family:inherit;font-weight:600;cursor:pointer}
+.btn-sm{padding:5px 12px;font-size:12px}
+.toggle-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;font-family:inherit;transition:all 0.15s}
+.toggle-btn:hover{background:var(--s2);color:var(--text)}
+
+/* STATUS BADGES */
+.status-pending{background:var(--amber-dim);color:var(--amber)}
+.status-transit{background:var(--blue-dim);color:var(--blue)}
+.status-settled{background:var(--green-dim);color:var(--green)}
+
+/* MEMO BOX */
+.memo-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.memo-textarea{width:100%;height:64px;resize:vertical;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:13px;color:var(--text);outline:none;transition:border-color 0.18s}
+.memo-textarea:focus{border-color:var(--blue);background:var(--card)}
+
+/* INFLIGHT SUMMARY */
+.if-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+
+/* RATE SLAB TABLE */
+.slab-tbl td,.slab-tbl th{font-size:12px;padding:7px 12px;border-bottom:1px solid var(--border)}
+.slab-tbl th{font-size:10px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px;background:var(--s2)}
+
+/* INDEX COMPARE CONTROLS */
+.index-ctrl{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:12px 16px;background:var(--s2);border-radius:10px;border:1px solid var(--border)}
+.index-ctrl label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.index-ctrl input[type=number]{width:64px;padding:5px 8px;font-size:12.5px}
+.index-ctrl .note{font-size:11px;color:var(--faint);margin-left:auto}
+
+/* CATEGORY EDIT */
+.cat-edit-sel{font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-family:inherit;cursor:pointer}
+.edit-icon{cursor:pointer;opacity:0.4;margin-left:4px;font-size:11px;transition:opacity 0.15s}
+.edit-icon:hover{opacity:1}
+
+/* MOM CHART SECTION */
+.mom-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mom-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px}
+.mom-up{background:var(--red-dim);color:var(--red)}
+.mom-down{background:var(--green-dim);color:var(--green)}
+
+/* TAB BAR */
+.tab-bar{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:16px}
+.tab-btn{background:none;border:none;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);padding:8px 18px;cursor:pointer;position:relative;transition:color 0.15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--blue);font-weight:700}
+.tab-btn.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--blue);border-radius:2px 2px 0 0}
+
+/* FIRE CARD */
+.fire-card{background:linear-gradient(135deg,rgba(29,78,216,0.04) 0%,rgba(124,58,237,0.04) 100%);border:1px solid rgba(29,78,216,0.15);border-radius:16px;padding:22px;margin-top:14px}
+.fire-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:16px 0}
+.fire-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.fire-label{font-size:10.5px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
+.fire-value{font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--text);font-variant-numeric:tabular-nums}
+.fire-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.fire-progress{height:12px;background:var(--s2);border-radius:99px;overflow:hidden;margin:10px 0 5px}
+.fire-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--purple));transition:width 1s cubic-bezier(.4,0,.2,1)}
+
+/* GOALS */
+.goal-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-sm)}
+.goal-name{font-size:14px;font-weight:700;color:var(--text)}
+.goal-meta{font-size:12px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.goal-track{height:8px;background:var(--s2);border-radius:99px;overflow:hidden}
+.goal-fill{height:100%;border-radius:99px;transition:width 0.8s ease}
+.goals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:14px}
+.goal-pct{font-size:11.5px;font-weight:700;min-width:38px;text-align:right}
+
+/* PRIVACY MODE */
+body.privacy .kpi-value,
+body.privacy .kpi-meta,
+body.privacy .acc-bal,
+body.privacy .holding-inr,
+body.privacy .holding-usd,
+body.privacy .stat-value,
+body.privacy .stat-sub,
+body.privacy .fire-value,
+body.privacy .fire-sub,
+body.privacy .assume-val,
+body.privacy .passive-banner-stat .val,
+body.privacy #sideRate strong,
+body.privacy #sideEth,
+body.privacy #sideSol,
+body.privacy .proj-tbl td,
+body.privacy .goal-meta strong,
+body.privacy .goal-meta span,
+body.privacy .goal-pct,
+body.privacy td[style*="text-align:right"],
+body.privacy td[style*="text-align: right"],
+body.privacy .holding-qty,
+body.privacy .acc-sub,
+body.privacy .rate-row strong,
+body.privacy .passive-banner-stat .lbl,
+body.privacy .ptbl td:not(:first-child) {
+  filter: blur(8px);
+  user-select: none;
+  transition: filter 0.25s ease;
+}
+body:not(.privacy) .kpi-value,
+body:not(.privacy) .acc-bal,
+body:not(.privacy) .holding-inr { transition: filter 0.25s ease; }
+
+/* TXN GROUP HEADER */
+.txn-group-row td{background:var(--s2)!important;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;padding:6px 14px}
+.txn-group-total{float:right;font-weight:700;color:var(--text)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="brand-name">Finance Dashboard</div>
+    <div class="brand-sub" id="brandSub">FY 2026</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Workspace</div>
+    <div class="nav-item active" onclick="switchPage('overview',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Overview
+    </div>
+    <div class="nav-item" onclick="switchPage('cashflow',this)">
+      <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      Cash Flow
+    </div>
+    <div class="nav-item" onclick="switchPage('portfolio',this)">
+      <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+      Portfolio
+    </div>
+    <div class="nav-item" onclick="switchPage('projections',this)">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><path d="M2 20h20"/></svg>
+      Projections
+    </div>
+    <div class="nav-item" onclick="switchPage('inflight',this)">
+      <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>
+      Inflight
+    </div>
+    <div class="nav-item" onclick="switchPage('transactions',this)">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>
+      Transactions
+    </div>
+    <div class="nav-item" onclick="switchPage('goals',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      Goals
+    </div>
+    <div class="nav-item" onclick="switchPage('firc',this)">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      FIRC / FX
+    </div>
+    <div class="nav-item" onclick="switchPage('taxes',this)">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Taxes
+    </div>
+    <div class="nav-item" onclick="switchPage('invoices',this)">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="19" x2="11" y2="19"/></svg>
+      Invoices
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="rate-row">
+      <svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      USD/INR: <strong id="sideRate">₹84.00</strong>
+    </div>
+    <div class="rate-row" style="margin-bottom:4px">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      ETH: <strong id="sideEth">$2,017</strong> &nbsp;SOL: <strong id="sideSol">$82</strong>
+    </div>
+    <div class="footer-note" id="sideRateTs">Loading live rates…</div>
+    <div id="inflationRow" style="display:none;font-size:10.5px;color:var(--faint);margin-top:5px;flex-wrap:wrap;gap:2px"></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">Overview</div>
+    <div class="topbar-right">
+      <span class="pill">Apr – Jun 2026</span>
+      <span class="pill live" id="livePill">Live</span>
+      <button id="privacyBtn" onclick="togglePrivacy()" title="Hide/show numbers" style="background:none;border:1px solid var(--border);border-radius:10px;padding:5px 10px;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:5px;font-family:inherit;font-size:12px;font-weight:500;transition:all 0.15s" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='none'">
+        <svg id="eyeIcon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span id="eyeLabel">Hide</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi-card nw">
+      <div class="kpi-icon blue">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Total Net Worth</div>
+        <div class="kpi-value" id="kpiNW">₹2.14 Cr</div>
+        <div class="kpi-meta" id="kpiNWSub">$2,55,022 · <span class="pos">↑ computing…</span></div>
+      </div>
+    </div>
+    <div class="kpi-card bank">
+      <div class="kpi-icon green">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Bank Balances</div>
+        <div class="kpi-value">₹1.33 Cr</div>
+        <div class="kpi-meta">Primary + Secondary · tiered interest</div>
+      </div>
+    </div>
+    <div class="kpi-card kraken">
+      <div class="kpi-icon amber">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Exchange Portfolio</div>
+        <div class="kpi-value" id="kpiKraken">$0</div>
+        <div class="kpi-meta" id="kpiKrakenSub">loading live prices…</div>
+      </div>
+    </div>
+    <div class="kpi-card flow">
+      <div class="kpi-icon purple">
+        <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Passive Income / Mo</div>
+        <div class="kpi-value" id="kpiPassive" style="color:var(--green)">₹1.00 L</div>
+        <div class="kpi-meta" id="kpiPassiveSub">Bank + Staking</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: OVERVIEW -->
+  <div class="page active" id="page-overview">
+    <div class="g2 mb14">
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Net Worth Growth — 12-month Projection</div></div>
+        <canvas id="nwPreviewChart" height="200"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Asset Allocation</div></div>
+        <canvas id="allocChart" height="200"></canvas>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Account Balances</div>
+          <button class="toggle-btn btn-sm" onclick="toggleAccForm()" style="font-size:11px">+ Add</button>
+        </div>
+        <div id="accList"></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Exchange Holdings · Live Prices</div></div>
+        <div class="holding-row">
+          <div class="coin-badge" style="color:var(--blue)">ETH</div>
+          <div class="holding-info"><div class="holding-name">Ethereum</div><div class="holding-qty" id="hEthQty">1.1108 ETH · $2,017/ETH</div></div>
+          <div class="holding-right"><div class="holding-inr" id="hEthINR">₹0</div><div class="holding-usd" id="hEthUSD">$0</div></div>
+        </div>
+        <div class="holding-row">
+          <div class="coin-badge" style="color:var(--purple)">SOL</div>
+          <div class="holding-info"><div class="holding-name">Solana</div><div class="holding-qty" id="hSolQty">4.3114 SOL · $82.33/SOL</div></div>
+          <div class="holding-right"><div class="holding-inr" id="hSolINR">₹0</div><div class="holding-usd" id="hSolUSD">$0</div></div>
+        </div>
+        <div class="holding-row">
+          <div class="coin-badge" style="color:var(--green)">USDC</div>
+          <div class="holding-info"><div class="holding-name">USD Coin (Earn + Spot)</div><div class="holding-qty">70,125.91 USDC · ~5% APY</div></div>
+          <div class="holding-right"><div class="holding-inr" id="hUsdcINR">₹0</div><div class="holding-usd" id="hUsdcUSD">$0</div></div>
+        </div>
+        <div class="holding-row">
+          <div class="coin-badge" style="color:var(--amber)">USDT</div>
+          <div class="holding-info"><div class="holding-name">Tether (Earn + Spot)</div><div class="holding-qty">3,461.98 USDT</div></div>
+          <div class="holding-right"><div class="holding-inr" id="hUsdtINR">₹0</div><div class="holding-usd">$0</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: CASH FLOW -->
+  <div class="page" id="page-cashflow">
+    <!-- Monthly Memo -->
+    <div class="memo-box mb14">
+      <div class="card-hd" style="margin-bottom:10px">
+        <div class="card-title">Monthly Notes</div>
+        <span id="memoStatus" style="font-size:11px;color:var(--faint)"></span>
+      </div>
+      <textarea class="memo-textarea" id="memoText" placeholder="Add notes for this period — e.g. 'May: heavy Amazon spend, salary arrived May 5th'…" oninput="saveMemo()"></textarea>
+    </div>
+
+    <div class="g3 mb14">
+      <div class="stat-box">
+        <div class="stat-label">Total Income (Apr–Jun)</div>
+        <div class="stat-value" style="color:var(--green)" id="statIncomeQ">₹0</div>
+        <div class="stat-sub">Salary + Interest + Staking</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Total Expenses (Apr–Jun)</div>
+        <div class="stat-value" style="color:var(--red)" id="statExpenseQ">₹0</div>
+        <div class="stat-sub">Across all categories</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Net Saved (Apr–Jun)</div>
+        <div class="stat-value" style="color:var(--blue)" id="statNetQ">₹0</div>
+        <div class="stat-sub" id="statSavingsRate">Savings rate</div>
+      </div>
+    </div>
+
+    <div class="card mb14">
+      <div class="card-hd"><div class="card-title">Monthly Income vs Expenses</div></div>
+      <canvas id="monthlyChart" height="130"></canvas>
+    </div>
+
+    <!-- Interest line chart with index fund comparison -->
+    <div class="card mb14">
+      <div class="card-hd"><div class="card-title">Bank Interest Income vs Index Fund Equivalent Returns</div></div>
+      <div class="index-ctrl">
+        <label>Nifty 50 CAGR: <input type="number" id="niftyRate" value="12" min="1" max="40" step="0.5" oninput="updateIndexComparison()">%</label>
+        <label>S&amp;P 500 CAGR: <input type="number" id="spRate" value="10" min="1" max="30" step="0.5" oninput="updateIndexComparison()">%</label>
+        <span class="note">Comparison base: Opening bank balance ₹1.27 Cr (Apr 2026). Index = capital appreciation, not income.</span>
+      </div>
+      <canvas id="interestCompareChart" height="160"></canvas>
+    </div>
+
+    <div class="g2 mb14">
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Passive Income Breakdown (May 2026)</div></div>
+        <canvas id="passivePieChart" height="190"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Income Sources</div></div>
+        <canvas id="incCatChart" height="190"></canvas>
+      </div>
+    </div>
+
+    <!-- Month-over-Month category comparison -->
+    <div class="card mb14">
+      <div class="card-hd">
+        <div class="card-title">Spending by Category — Apr vs May 2026</div>
+      </div>
+      <canvas id="momChart" height="200"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Top Expense Categories (Apr–Jun cumulative)</div></div>
+      <div id="progBars" style="padding-top:4px"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: PORTFOLIO -->
+  <div class="page" id="page-portfolio">
+    <div class="g2 mb14">
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Overall Asset Allocation (Live)</div></div>
+        <canvas id="portfolioPie" height="260"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Exchange Breakdown (USD · Live)</div></div>
+        <canvas id="krakenPie" height="260"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Portfolio Summary</div></div>
+      <div class="tbl-wrap">
+        <table class="ptbl">
+          <thead><tr><th>Asset Class</th><th>Value (₹)</th><th>Value (USD)</th><th>% of Portfolio</th><th>Details</th></tr></thead>
+          <tbody id="ptblBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: PROJECTIONS -->
+  <div class="page" id="page-projections">
+    <div class="passive-banner">
+      <div class="passive-banner-stat">
+        <div class="val" id="projPassive">₹0</div>
+        <div class="lbl">Current Monthly Passive Income</div>
+      </div>
+      <div class="passive-divider"></div>
+      <div class="passive-banner-stat">
+        <div class="val" id="projFinalNW">₹3.00 Cr</div>
+        <div class="lbl">Projected Net Worth · Jun 2027</div>
+      </div>
+      <div class="passive-divider"></div>
+      <div class="passive-banner-stat">
+        <div class="val" id="projGrowth" style="color:var(--blue)">+40%</div>
+        <div class="lbl">Projected 12-month NW Growth</div>
+      </div>
+    </div>
+
+    <!-- IDFC tiered rate info -->
+    <div class="card mb14">
+      <div class="card-hd"><div class="card-title">Primary Bank — Tiered Interest Rate Structure (w.e.f. 21 Apr 2026)</div></div>
+      <div class="g2" style="gap:20px">
+        <table class="slab-tbl" style="flex:1">
+          <thead><tr><th>Balance Slab</th><th>Rate (p.a.)</th><th style="text-align:right">Monthly Interest on Your Balance</th></tr></thead>
+          <tbody>
+            <tr><td>First ₹3 Lakhs</td><td style="color:var(--muted)">2.50%</td><td style="text-align:right;color:var(--muted)">₹625 / month</td></tr>
+            <tr><td style="font-weight:600">₹3 Lakhs – ₹25 Crores <span style="color:var(--green);font-size:10px">← Your balance</span></td><td style="color:var(--green);font-weight:700">6.50%</td><td style="text-align:right;font-weight:700">₹70,188 / month</td></tr>
+            <tr><td>Above ₹25 Crores</td><td style="color:var(--muted)">5.00%</td><td style="text-align:right;color:var(--muted)">N/A</td></tr>
+            <tr style="background:var(--s2)"><td style="font-weight:700">Total (current month est.)</td><td></td><td style="text-align:right;font-weight:700;color:var(--green)" id="totalPassiveRow">≈ ₹0 / month</td></tr>
+          </tbody>
+        </table>
+        <div style="flex:1">
+          <div class="stat-label" style="margin-bottom:8px">Actual vs Model</div>
+          <div class="prog-row"><span class="prog-label">Prior month</span><div class="prog-track"><div class="prog-fill" style="width:0%;background:var(--green)"></div></div><span class="prog-val" style="color:var(--green)">₹0</span></div>
+          <div class="prog-row"><span class="prog-label">Last month</span><div class="prog-track"><div class="prog-fill" style="width:0%;background:var(--green)"></div></div><span class="prog-val" style="color:var(--green)">₹0</span></div>
+          <div class="prog-row"><span class="prog-label">This month</span><div class="prog-track"><div class="prog-fill" style="width:0%;background:var(--blue)"></div></div><span class="prog-val" style="color:var(--blue)">₹0</span></div>
+          <div class="disclaimer" style="margin-top:8px">Interest calculated on daily average balance. Projection uses tiered formula; actuals may differ slightly due to intra-month balance changes.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assumptions -->
+    <div class="assume-grid">
+      <div class="assume-card">
+        <div class="assume-icon" style="background:var(--green-dim);color:var(--green)">
+          <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <div><div class="assume-label">Monthly Salary</div><div class="assume-val" id="assumeSalary">₹0</div><div class="assume-note">From CONFIG.monthlyNetSalary</div></div>
+      </div>
+      <div class="assume-card">
+        <div class="assume-icon" style="background:var(--blue-dim);color:var(--blue)">
+          <svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div><div class="assume-label">Bank Rate (Tiered)</div><div class="assume-val">6.50% p.a.</div><div class="assume-note">On ₹3L–₹25Cr slab</div></div>
+      </div>
+      <div class="assume-card">
+        <div class="assume-icon" style="background:var(--amber-dim);color:var(--amber)">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div><div class="assume-label">Exchange Staking</div><div class="assume-val" id="projStakingAmt">$0/mo</div><div class="assume-note" id="projStakingINR">≈ ₹0 at live rate</div></div>
+      </div>
+      <div class="assume-card">
+        <div class="assume-icon" style="background:var(--red-dim);color:var(--red)">
+          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </div>
+        <div><div class="assume-label">Monthly Expenses</div><div class="assume-val">₹30,000</div><div class="assume-note">Conservative estimate</div></div>
+      </div>
+      <div class="assume-card">
+        <div class="assume-icon" style="background:var(--purple-dim);color:var(--purple)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M1 12h22"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div><div class="assume-label">USD/INR Rate</div><div class="assume-val" id="projUsdInr">₹84</div><div class="assume-note">Live · refreshes every 5 min</div></div>
+      </div>
+      <div class="assume-card">
+        <div class="assume-icon" style="background:rgba(15,118,110,0.08);color:var(--teal)">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div><div class="assume-label">Crypto Prices</div><div class="assume-val">Live (Binance)</div><div class="assume-note">ETH &amp; SOL refreshed</div></div>
+      </div>
+    </div>
+
+    <div class="card mb14">
+      <div class="card-hd"><div class="card-title">Net Worth Projection — Jun 2026 to Jun 2027 (₹ Crores)</div></div>
+      <canvas id="nwProjectionChart" height="160"></canvas>
+    </div>
+
+    <div class="g2 mb14">
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Bank Interest Income — Historical &amp; Projected (₹ Thousands)</div></div>
+        <canvas id="interestProjChart" height="210"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">vs Nifty 50 / S&amp;P 500 (same capital, ₹ Thousands/month)</div></div>
+        <canvas id="nwIndexCompareChart" height="210"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="card-title">12-Month Projection Schedule</div></div>
+      <div class="tbl-wrap">
+        <table class="proj-tbl">
+          <thead><tr>
+            <th>Month</th><th class="num">Bank Balance</th><th class="num">Bank Interest</th>
+            <th class="num">Staking</th><th class="num">Salary</th>
+            <th class="num">Expenses</th><th class="num">Net Monthly</th><th class="num">Net Worth</th>
+          </tr></thead>
+          <tbody id="projTableBody"></tbody>
+        </table>
+      </div>
+      <div class="disclaimer">⚠ Uses tiered bank rate (configured in CONFIG.bankInterest). Staking computed at live USD/INR. Crypto held at live prices. Actual results will vary.</div>
+    </div>
+
+    <!-- FIRE PROJECTION -->
+    <div class="fire-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:16px;font-weight:800;letter-spacing:-0.4px">🔥 FIRE Projection</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px">Financial Independence, Retire Early — based on your current trajectory</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <label style="font-size:12px;color:var(--muted)">Monthly expenses (₹)</label>
+          <input type="number" id="fireExpenses" value="30000" min="1000" step="1000" style="width:120px;padding:6px 10px;font-size:13px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:inherit" oninput="saveMonthlyExpenses(this.value);buildFireProjection()">
+          <label style="font-size:12px;color:var(--muted)">SWR %</label>
+          <input type="number" id="fireSWR" value="4" min="1" max="10" step="0.5" style="width:72px;padding:6px 10px;font-size:13px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:inherit" oninput="buildFireProjection()">
+        </div>
+      </div>
+      <div class="fire-grid" id="fireGrid">
+        <div class="fire-stat"><div class="fire-label">FIRE Number</div><div class="fire-value" id="fireNumber">—</div><div class="fire-sub">25× annual expenses</div></div>
+        <div class="fire-stat"><div class="fire-label">Current Net Worth</div><div class="fire-value" id="fireNW">—</div><div class="fire-sub">as of today</div></div>
+        <div class="fire-stat"><div class="fire-label">Progress</div><div class="fire-value" id="fireProgress">—</div><div class="fire-sub">of FIRE target</div></div>
+        <div class="fire-stat"><div class="fire-label">Projected FIRE Date</div><div class="fire-value" id="fireDate">—</div><div class="fire-sub" id="fireDateSub">at current savings rate</div></div>
+      </div>
+      <div style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:12px;color:var(--muted)">Net worth progress toward FIRE</span>
+        <span style="font-size:12px;font-weight:700;color:var(--blue)" id="firePctLabel">0%</span>
+      </div>
+      <div class="fire-progress"><div class="fire-fill" id="fireFill" style="width:0%"></div></div>
+      <canvas id="fireChart" height="120" style="margin-top:14px"></canvas>
+
+      <!-- USD Holdings Appreciation in INR -->
+      <div style="margin-top:22px;border-top:1px solid var(--border);padding-top:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div>
+            <div style="font-size:14px;font-weight:700;letter-spacing:-0.3px">💵 USD Holdings — INR Appreciation Model</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">How your USD stablecoins + cash grow in INR terms as rupee depreciates</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <label style="font-size:12px;color:var(--muted)">INR depreciation %/yr</label>
+            <input type="number" id="fireInrDeprRate" value="3" min="0" max="15" step="0.5" style="width:72px;padding:5px 8px;font-size:13px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:inherit" oninput="buildUsdAppreciation()">
+            <label style="font-size:12px;color:var(--muted)">Horizon (yrs)</label>
+            <input type="number" id="fireUsdHorizon" value="10" min="1" max="30" step="1" style="width:64px;padding:5px 8px;font-size:13px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:inherit" oninput="buildUsdAppreciation()">
+          </div>
+        </div>
+        <div class="g4" style="margin-bottom:14px">
+          <div class="stat-box"><div class="stat-label">USD Holdings</div><div class="stat-value" id="fireUsdHeld">—</div><div class="stat-sub">stablecoins + cash</div></div>
+          <div class="stat-box"><div class="stat-label">INR Value Today</div><div class="stat-value" id="fireUsdInrNow">—</div><div class="stat-sub" id="fireUsdRateNow">at live rate</div></div>
+          <div class="stat-box"><div class="stat-label">Projected INR Value</div><div class="stat-value" style="color:var(--green)" id="fireUsdInrFuture">—</div><div class="stat-sub" id="fireUsdFutureSub">in N years</div></div>
+          <div class="stat-box"><div class="stat-label">Projected INR Gain</div><div class="stat-value" style="color:var(--green)" id="fireUsdGain">—</div><div class="stat-sub" id="fireUsdGainPct">on depreciation alone</div></div>
+        </div>
+        <canvas id="fireUsdChart" height="90"></canvas>
+      </div>
+
+      <div class="disclaimer" style="margin-top:12px">📌 FIRE number uses the <strong>4% safe withdrawal rule</strong> (25× annual expenses). Assumes current monthly savings rate continues. Crypto held at today's prices; does not model market appreciation/depreciation. USD appreciation model assumes constant annual INR depreciation — actual rates vary. Not financial advice.</div>
+    </div>
+  </div>
+
+  <!-- PAGE: INFLIGHT -->
+  <div class="page" id="page-inflight">
+    <div class="if-summary">
+      <div class="stat-box">
+        <div class="stat-label">Total In-Flight (USD)</div>
+        <div class="stat-value" id="ifTotalUSD">$0</div>
+        <div class="stat-sub" id="ifCount">0 entries</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">INR Value @ Live Rate</div>
+        <div class="stat-value" style="color:var(--green)" id="ifTotalINR">₹0</div>
+        <div class="stat-sub" id="ifRateNote">at ₹84.00/USD</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">FX Gain/Loss vs Initiation</div>
+        <div class="stat-value" id="ifFxDiff">₹0</div>
+        <div class="stat-sub">vs rate at initiation</div>
+      </div>
+    </div>
+
+    <div class="form-section mb14">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:14px">Add Offramp Entry</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Asset</label>
+          <select id="ifAsset">
+            <option>USDC</option><option>USDT</option><option>ETH</option><option>SOL</option><option>USD</option><option>BTC</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (USD)</label>
+          <input type="number" id="ifAmtUSD" placeholder="e.g. 5000" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rate at Initiation (₹)</label>
+          <input type="number" id="ifRateAt" placeholder="e.g. 84.50" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select id="ifStatus">
+            <option>Pending</option><option>In Transit</option><option>Settled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date Initiated</label>
+          <input type="date" id="ifDateIn">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expected Settlement</label>
+          <input type="date" id="ifDateEx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input type="text" id="ifNotes" placeholder="e.g. Exchange → Bank wire" style="padding:7px 12px;width:100%">
+        </div>
+        <div class="form-group" style="justify-content:flex-end">
+          <button class="btn btn-primary" onclick="addInflightEntry()">Add Entry</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Inflight Offramps</div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Asset</th><th>USD Amount</th><th>INR @ Live</th>
+            <th>FX Diff</th><th>Initiated</th><th>Expected</th><th>Notes</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="ifBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: TRANSACTIONS -->
+  <div class="page" id="page-transactions">
+    <!-- Add Manual Entry -->
+    <div style="margin-bottom:14px">
+      <button class="toggle-btn" onclick="toggleManualForm()">+ Add Manual Entry</button>
+    </div>
+    <div id="manualForm" style="display:none" class="form-section mb14">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:14px">Add Transaction</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" id="meDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="meDesc" placeholder="e.g. Bike EMI" style="padding:7px 12px;width:100%">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="meCat">
+            <option>Shopping</option><option>Utilities</option><option>Donations</option>
+            <option>Education</option><option>Operating Costs</option><option>Healthcare</option>
+            <option>Subscriptions</option><option>Travel</option><option>Food &amp; Dining</option>
+            <option>Bike</option><option>Home Renovation</option><option>Taxes</option>
+            <option>Groceries</option><option>Freelance</option><option>Investment Returns</option>
+            <option>Transfer</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select id="meType"><option>Expense</option><option>Income</option><option>Transfer</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Account</label>
+          <select id="meAcct">
+            <option>Primary Bank</option><option>Secondary Bank</option><option>Exchange</option><option>Cash</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount (₹)</label>
+          <input type="number" id="meAmt" placeholder="e.g. 12500" min="0" step="0.01">
+        </div>
+        <div class="form-group" style="justify-content:flex-end">
+          <button class="btn btn-primary" onclick="addManualEntry()">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="txnTabAll"  onclick="setTxnTab('all')">All</button>
+        <button class="tab-btn"         id="txnTabM"    onclick="setTxnTab('monthly')">Monthly</button>
+        <button class="tab-btn"         id="txnTabW"    onclick="setTxnTab('weekly')">Weekly</button>
+      </div>
+      <div class="card-hd" style="flex-wrap:wrap;gap:12px">
+        <div class="card-title" id="txnCardTitle">All Transactions</div>
+        <div class="txn-controls">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="txnSearch" placeholder="Search description, category…" oninput="filterTxns()">
+          </div>
+          <select id="txnType" onchange="filterTxns()">
+            <option value="">All Types</option><option>Income</option><option>Expense</option><option>Transfer</option>
+          </select>
+          <select id="txnCat" onchange="filterTxns()">
+            <option value="">All Categories</option>
+            <option>Shopping</option><option>Other</option><option>Utilities</option>
+            <option>Healthcare</option><option>Subscriptions</option><option>Travel</option>
+            <option>Groceries</option><option>Food &amp; Dining</option><option>Freelance</option>
+            <option>Investment Returns</option><option>Transfer</option><option>Donations</option>
+            <option>Education</option><option>Operating Costs</option><option>Bike</option>
+            <option>Home Renovation</option><option>Taxes</option>
+          </select>
+        </div>
+      </div>
+      <div class="tbl-inner tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Description</th><th>Account</th>
+            <th>Category</th><th>Type</th><th style="text-align:right">Amount (₹)</th>
+          </tr></thead>
+          <tbody id="txnBody"></tbody>
+        </table>
+      </div>
+      <div class="txn-count" id="txnCount"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: FIRC / FX -->
+  <div class="page" id="page-firc">
+    <!-- Summary strip -->
+    <div class="g4 mb14">
+      <div class="stat-box"><div class="stat-label">Total Remittances</div><div class="stat-value" id="fircTotalUSD">$0</div><div class="stat-sub" id="fircCount">0 entries</div></div>
+      <div class="stat-box"><div class="stat-label">INR @ Receipt</div><div class="stat-value" id="fircBaseINR">₹0</div><div class="stat-sub">at rates when received</div></div>
+      <div class="stat-box"><div class="stat-label">INR @ Live Rate</div><div class="stat-value" style="color:var(--green)" id="fircLiveINR">₹0</div><div class="stat-sub" id="fircRateNote">at ₹84/USD</div></div>
+      <div class="stat-box"><div class="stat-label">FX Depreciation Gain</div><div class="stat-value" id="fircFxGain">₹0</div><div class="stat-sub">benefit of holding USD</div></div>
+    </div>
+
+    <!-- USD Holdings appreciation panel -->
+    <div class="fire-card mb14" style="background:linear-gradient(135deg,rgba(21,128,61,0.04),rgba(15,118,110,0.04));border-color:rgba(21,128,61,0.15)">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+        <div>
+          <div style="font-size:14px;font-weight:800">💱 USD Holdings Appreciation</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Gain from holding USD as INR depreciates</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:12px;color:var(--muted)">Base rate (₹)</label>
+          <input type="number" id="fxBaseRateInput" step="0.01" style="width:90px;padding:5px 8px;font-size:13px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:inherit" oninput="renderFirc()">
+        </div>
+      </div>
+      <div class="g4" id="fxAppGrid">
+        <div class="stat-box"><div class="stat-label">Exchange USD Holdings</div><div class="stat-value" id="fxUsdTotal">$0</div><div class="stat-sub">USDC + USDT + USD Cash</div></div>
+        <div class="stat-box"><div class="stat-label">INR @ Your Base Rate</div><div class="stat-value" id="fxBaseINR">₹0</div><div class="stat-sub" id="fxBaseRateLbl">at live rate</div></div>
+        <div class="stat-box"><div class="stat-label">INR @ Live Rate Now</div><div class="stat-value" style="color:var(--green)" id="fxLiveINR">₹0</div><div class="stat-sub">current value</div></div>
+        <div class="stat-box"><div class="stat-label">FX Appreciation Gain</div><div class="stat-value" id="fxGainVal">₹0</div><div class="stat-sub" id="fxGainPct"></div></div>
+      </div>
+    </div>
+
+    <!-- Add FIRC entry -->
+    <div class="form-section mb14">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:14px">Log Foreign Remittance</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Date Received</label><input type="date" id="fircDate"></div>
+        <div class="form-group"><label class="form-label">Amount (USD)</label><input type="number" id="fircAmtUSD" placeholder="e.g. 7000" min="0" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Rate at Receipt (₹)</label><input type="number" id="fircRateAt" placeholder="e.g. 83.50" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Purpose / Sender</label><input type="text" id="fircPurpose" placeholder="e.g. Salary — Client Name" style="padding:7px 12px;width:100%"></div>
+        <div class="form-group"><label class="form-label">FIRC Ref #</label><input type="text" id="fircRef" placeholder="e.g. FIRC/2026/0001" style="padding:7px 12px;width:100%"></div>
+        <div class="form-group">
+          <label class="form-label">Certificate (PDF/Image)</label>
+          <input type="file" id="fircFile" accept=".pdf,image/*" style="font-size:12px;padding:5px 0;width:100%">
+        </div>
+        <div class="form-group" style="justify-content:flex-end;align-self:end">
+          <button class="btn btn-primary" onclick="addFircEntry()">Add Entry</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="card-title">FIRC Log — Foreign Remittances</div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Purpose / Sender</th><th>FIRC Ref</th>
+            <th style="text-align:right">USD Amount</th>
+            <th style="text-align:right">INR @ Receipt</th>
+            <th style="text-align:right">INR @ Live</th>
+            <th style="text-align:right">FX Gain</th>
+            <th>Certificate</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="fircBody"></tbody>
+        </table>
+      </div>
+      <div class="disclaimer" style="margin-top:12px">FIRC (Foreign Inward Remittance Certificate) is required for income tax filing and FEMA compliance. Log each remittance as it arrives. FX Gain = (Live Rate − Receipt Rate) × USD Amount — this is unrealised gain from INR depreciation while you held USD.</div>
+    </div>
+  </div>
+
+  <!-- PAGE: TAXES -->
+  <div class="page" id="page-taxes">
+    <!-- Summary stat boxes -->
+    <div class="g4 mb14">
+      <div class="stat-box"><div class="stat-label">Net Tax Payable (FY 2026-27)</div><div class="stat-value" id="taxTotal" style="color:var(--red)">₹0</div><div class="stat-sub" id="taxRegimeLabel">New Regime · 44AD</div></div>
+      <div class="stat-box"><div class="stat-label">Gross Business Receipts</div><div class="stat-value" id="taxGrossReceipts">₹0</div><div class="stat-sub" id="taxReceiptsSub">from Paid invoices</div></div>
+      <div class="stat-box"><div class="stat-label">Presumptive Profit (44AD)</div><div class="stat-value" id="taxProfit" style="color:var(--blue)">₹0</div><div class="stat-sub" id="taxProfitSub">6% of gross receipts</div></div>
+      <div class="stat-box"><div class="stat-label">Advance Tax Paid</div><div class="stat-value" style="color:var(--green)" id="taxAdvPaid">₹0</div><div class="stat-sub" id="taxAdvSub">across all quarters</div></div>
+    </div>
+
+    <div class="g2 mb14">
+      <!-- 44ADA Income inputs -->
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">44AD Presumptive Income — FY 2026-27</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:2px">Sec 44AD: presumptive profit on gross business receipts (6% digital / 8% cash — set your own rate)</div>
+          </div>
+          <button class="toggle-btn btn-sm" id="regimeBtn" onclick="toggleRegime()">Switch to Old Regime</button>
+        </div>
+
+        <!-- Gross receipts + profit rate -->
+        <div style="margin-bottom:14px">
+          <label class="form-label" style="margin-bottom:6px;display:block">Gross Business Receipts (₹/year)</label>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <input type="number" id="taxGrossInp" placeholder="auto-filled from Paid invoices" step="1000" style="flex:1;min-width:180px;padding:7px 12px" oninput="computeTax()">
+            <button class="btn btn-sm" onclick="pullReceiptsFromInvoices()" style="white-space:nowrap;font-size:12px">↻ Pull from Invoices</button>
+          </div>
+          <div style="font-size:11px;color:var(--faint);margin-top:5px" id="taxReceiptNote">Click "Pull from Invoices" to auto-fill from your Paid invoices</div>
+        </div>
+        <div style="margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <label class="form-label" style="margin:0">Presumptive Profit Rate (%)</label>
+          <input type="number" id="taxProfitRate" value="6" min="1" max="100" step="0.5"
+            style="width:80px;padding:6px 10px;font-size:13px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:inherit"
+            oninput="computeTax()">
+          <span style="font-size:11.5px;color:var(--muted)">44AD: 6% (digital receipts) or 8% (cash). You can override this.</span>
+        </div>
+
+        <!-- Other income -->
+        <div class="form-grid" style="gap:10px;margin-bottom:14px">
+          <div class="form-group"><label class="form-label">Bank Interest Income (₹)</label>
+            <input type="number" id="taxInterest" placeholder="e.g. 857712" step="1000" oninput="computeTax()"></div>
+          <div class="form-group"><label class="form-label">Other Income (₹)</label>
+            <input type="number" id="taxOther" placeholder="e.g. staking, dividends" step="1000" oninput="computeTax()"></div>
+        </div>
+
+        <!-- Deductions (old regime only) -->
+        <div id="taxDeductionsWrap" style="display:none;border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px">Chapter VI-A Deductions (Old Regime)</div>
+          <div class="form-grid" style="gap:10px">
+            <div class="form-group"><label class="form-label">80C — PF, ELSS, LIC etc. (max ₹1.5L)</label>
+              <input type="number" id="tax80C" placeholder="max 150000" min="0" max="150000" step="1000" oninput="computeTax()"></div>
+            <div class="form-group"><label class="form-label">80D — Health Insurance (max ₹25K/50K)</label>
+              <input type="number" id="tax80D" placeholder="max 25000" min="0" step="1000" oninput="computeTax()"></div>
+            <div class="form-group"><label class="form-label">80CCD(1B) — NPS (max ₹50K)</label>
+              <input type="number" id="taxNPS" placeholder="max 50000" min="0" max="50000" step="1000" oninput="computeTax()"></div>
+            <div class="form-group"><label class="form-label">Other Deductions (₹)</label>
+              <input type="number" id="taxOtherDed" placeholder="80E, 80G, HRA etc." step="1000" oninput="computeTax()"></div>
+          </div>
+        </div>
+
+        <!-- Tax breakdown table -->
+        <div id="taxBreakdown" style="border-top:1px solid var(--border);padding-top:14px"></div>
+      </div>
+
+      <!-- Advance Tax -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Advance Tax — FY 2026-27</div></div>
+        <div id="advTaxTable"></div>
+        <div class="disclaimer" style="margin-top:10px">Advance tax applies if annual liability > ₹10,000. Under 44AD, you may pay the full advance tax in Q4 by Mar 15 with no Sec 234C interest. Sec 234B interest (1%/month) applies if less than 90% of total liability is paid by Mar 15.</div>
+      </div>
+    </div>
+
+    <!-- Crypto CGT Tracker -->
+    <div class="card mb14">
+      <div class="card-hd">
+        <div class="card-title">Crypto Capital Gains Tracker — 30% Flat (Sec 115BBH)</div>
+      </div>
+      <div class="form-section" style="margin-bottom:14px">
+        <div class="form-grid" style="gap:8px">
+          <div class="form-group"><label class="form-label">Asset</label>
+            <select id="cgtAsset"><option>ETH</option><option>SOL</option><option>BTC</option><option>USDC</option><option>USDT</option><option>Other</option></select></div>
+          <div class="form-group"><label class="form-label">Date of Sale</label><input type="date" id="cgtDate"></div>
+          <div class="form-group"><label class="form-label">Quantity Sold</label><input type="number" id="cgtQty" placeholder="e.g. 0.5" step="0.0001" min="0"></div>
+          <div class="form-group"><label class="form-label">Cost of Acquisition (₹)</label><input type="number" id="cgtCost" placeholder="total buy cost in ₹" step="1" min="0"></div>
+          <div class="form-group"><label class="form-label">Sale Proceeds (₹)</label><input type="number" id="cgtProceeds" placeholder="total sell proceeds in ₹" step="1" min="0"></div>
+          <div class="form-group"><label class="form-label">TDS Deducted (₹)</label><input type="number" id="cgtTDS" placeholder="1% of proceeds" step="1" min="0"></div>
+          <div class="form-group" style="justify-content:flex-end;align-self:end">
+            <button class="btn btn-primary" onclick="addCgtEntry()">Add Sale</button>
+          </div>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Asset</th><th>Qty</th>
+            <th style="text-align:right">Proceeds (₹)</th>
+            <th style="text-align:right">Cost (₹)</th>
+            <th style="text-align:right">Gain (₹)</th>
+            <th style="text-align:right">Tax @ 30%</th>
+            <th style="text-align:right">TDS Paid</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="cgtBody"></tbody>
+        </table>
+      </div>
+      <div class="disclaimer" style="margin-top:10px">⚠ Crypto losses cannot be set off against other income or carried forward. Each sale is taxed independently at 30% + 4% cess.</div>
+    </div>
+  </div>
+
+  <!-- PAGE: INVOICES -->
+  <div class="page" id="page-invoices">
+    <div class="g4 mb14">
+      <div class="stat-box"><div class="stat-label">Total Invoiced (USD)</div><div class="stat-value" id="invTotalUSD">$0</div><div class="stat-sub" id="invCount">0 invoices</div></div>
+      <div class="stat-box"><div class="stat-label">Paid</div><div class="stat-value" style="color:var(--green)" id="invPaid">$0</div><div class="stat-sub" id="invPaidCount">0 paid</div></div>
+      <div class="stat-box"><div class="stat-label">Outstanding</div><div class="stat-value" style="color:var(--amber)" id="invOutstanding">$0</div><div class="stat-sub" id="invOverdue">0 overdue</div></div>
+      <div class="stat-box"><div class="stat-label">INR Equivalent (Live)</div><div class="stat-value" id="invTotalINR">₹0</div><div class="stat-sub">at live USD/INR</div></div>
+    </div>
+
+    <div class="form-section mb14">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:14px">Create Invoice</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Invoice #</label>
+          <input type="text" id="invNum" placeholder="e.g. INV-2026-001" style="padding:7px 12px;width:100%"></div>
+        <div class="form-group"><label class="form-label">Client / Payer</label>
+          <input type="text" id="invClient" placeholder="e.g. Client Name" style="padding:7px 12px;width:100%"></div>
+        <div class="form-group"><label class="form-label">Invoice Date</label>
+          <input type="date" id="invDate"></div>
+        <div class="form-group"><label class="form-label">Due Date</label>
+          <input type="date" id="invDue"></div>
+        <div class="form-group"><label class="form-label">Amount (USD)</label>
+          <input type="number" id="invAmtUSD" placeholder="e.g. 7000" min="0" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select id="invStatus"><option>Draft</option><option>Sent</option><option>Paid</option><option>Overdue</option></select></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Description</label>
+          <input type="text" id="invDesc" placeholder="e.g. Software development services — May 2026" style="padding:7px 12px;width:100%"></div>
+        <div class="form-group" style="grid-column:-1/1;display:flex;justify-content:flex-end;gap:8px">
+          <button class="btn btn-primary" onclick="addInvoice()">Create Invoice</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Invoice Register</div></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Invoice #</th><th>Client</th><th>Date</th><th>Due</th>
+            <th style="text-align:right">Amount (USD)</th>
+            <th style="text-align:right">INR @ Live</th>
+            <th>Description</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="invBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: GOALS -->
+  <div class="page" id="page-goals">
+    <div class="form-section mb14">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:14px">Add New Goal</div>
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Goal Name</label>
+          <input type="text" id="goalName" placeholder="e.g. Emergency Fund, MacBook Pro, Europe Trip" style="padding:7px 12px;width:100%">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Amount (₹)</label>
+          <input type="number" id="goalTarget" placeholder="e.g. 500000" min="0" step="1000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Saved (₹)</label>
+          <input type="number" id="goalCurrent" placeholder="e.g. 150000" min="0" step="1000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Date</label>
+          <input type="date" id="goalDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <select id="goalColor">
+            <option value="#1D4ED8">Blue</option><option value="#15803D">Green</option>
+            <option value="#D97706">Amber</option><option value="#7C3AED">Purple</option>
+            <option value="#DC2626">Red</option><option value="#0F766E">Teal</option>
+          </select>
+        </div>
+        <div class="form-group" style="justify-content:flex-end;align-self:end">
+          <button class="btn btn-primary" onclick="addGoal()">Add Goal</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="goalsGrid" class="goals-grid"></div>
+    <div id="goalsEmpty" style="text-align:center;padding:60px 20px;color:var(--faint);display:none">
+      <div style="font-size:40px;margin-bottom:12px">🎯</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">No goals yet</div>
+      <div style="font-size:12px">Add your first financial goal above — retirement, travel, emergency fund…</div>
+    </div>
+  </div>
+
+</main>
+<script>
+// ══════════════════════════════════════════
+// CONFIG — Edit these to personalize your dashboard
+// ══════════════════════════════════════════
+const CONFIG = {
+  // --- Identity (optional, shown in page header) ---
+  ownerName: "Your Name",
+
+  // --- Bank balances (₹, snapshot) ---
+  banks: {
+    primary:   { name: "Primary Bank",   balance: 500000  },
+    secondary: { name: "Secondary Bank", balance: 0       },
+  },
+
+  // --- Salary & expenses ---
+  monthlyNetSalary: 80000,
+  defaultMonthlyExpenses: 30000,   // user can override in UI; persists to localStorage
+
+  // --- Crypto holdings (Kraken-style spot; works with any exchange that supports these tokens) ---
+  holdings: {
+    eth:    0.5,
+    sol:    2,
+    usdCash:1000,
+    usdc:   5000,
+    usdt:   0,
+  },
+  monthlyStakingUSD: 25,
+
+  // --- IDFC-style tiered interest (edit if your bank uses different tiers) ---
+  bankInterest: {
+    tier1: { upTo: 300000,    rate: 0.025 },  // 2.5% on first ₹3L
+    tier2: { upTo: 25000000,  rate: 0.065 },  // 6.5% ₹3L–₹25Cr
+    tier3: { rate: 0.05 },                    // 5% above ₹25Cr
+  },
+
+  // --- Index comparison baseline (₹ value at start of comparison window) ---
+  comparisonOpeningBalance: 500000,
+
+  // --- Tax defaults (India FY 2026-27) ---
+  tax: {
+    defaultRegime: "new",          // "new" | "old"
+    presumptiveProfitRate: 0.06,   // 6% digital, 8% cash (44AD)
+  },
+};
+
+// ══════════════════════════════════════════
+// CONSTANTS — derived from CONFIG (do not edit; edit CONFIG above)
+// ══════════════════════════════════════════
+const HOLDINGS           = CONFIG.holdings;
+const BANK_IDFC          = CONFIG.banks.primary.balance;
+const BANK_KOTAK         = CONFIG.banks.secondary.balance;
+const ACTUAL_STAKING_USD = CONFIG.monthlyStakingUSD;
+const COMPARE_OPENING    = CONFIG.comparisonOpeningBalance;
+const SALARY_INR         = CONFIG.monthlyNetSalary;
+// Monthly expenses — editable, persisted to localStorage
+function getMonthlyExpenses(){return parseFloat(localStorage.getItem('monthly_expenses'))||CONFIG.defaultMonthlyExpenses;}
+function saveMonthlyExpenses(v){localStorage.setItem('monthly_expenses',v);}
+const EXPENSES_INR = getMonthlyExpenses(); // kept for initial projection table; live reads use getMonthlyExpenses()
+
+// Live state (defaults, updated by API)
+const LIVE = { usdInr:84.0, eth:2017.04, sol:82.33, loaded:false, lastFetch:null };
+
+// Index rates (editable)
+const IDX = { nifty:12, sp:10 };
+
+// ══════════════════════════════════════════
+// TIERED IDFC INTEREST FORMULA
+// ══════════════════════════════════════════
+function calcIDFCInterest(balance) {
+  const t1 = CONFIG.bankInterest.tier1;
+  const t2 = CONFIG.bankInterest.tier2;
+  const t3 = CONFIG.bankInterest.tier3;
+  const s1 = Math.min(balance, t1.upTo)                                   * t1.rate / 12;
+  const s2 = Math.min(Math.max(balance - t1.upTo, 0), t2.upTo - t1.upTo)  * t2.rate / 12;
+  const s3 = Math.max(balance - t2.upTo, 0)                               * t3.rate / 12;
+  return Math.round(s1 + s2 + s3);
+}
+
+// ══════════════════════════════════════════
+// DERIVED COMPUTATIONS
+// ══════════════════════════════════════════
+function krakenUSD()  { return HOLDINGS.eth*LIVE.eth + HOLDINGS.sol*LIVE.sol + HOLDINGS.usdCash + HOLDINGS.usdc + HOLDINGS.usdt; }
+function krakenINR()  { return krakenUSD() * LIVE.usdInr; }
+function stakingINR() { return ACTUAL_STAKING_USD * LIVE.usdInr; }
+function totalNW()    {
+  const walletINR = (typeof walletETH==='function' ? walletETH() : 0) * LIVE.eth * LIVE.usdInr;
+  const extraBank = (typeof customBankINR==='function' ? customBankINR() : 0);
+  return BANK_IDFC + BANK_KOTAK + krakenINR() + walletINR + extraBank;
+}
+
+// ══════════════════════════════════════════
+// PROJECTION MODEL (uses tiered IDFC rate)
+// ══════════════════════════════════════════
+function buildProjection() {
+  let bank = BANK_IDFC;
+  const krakenBase = krakenINR();
+  const staking    = stakingINR();
+  const projMonths = ['Jun 2026','Jul 2026','Aug 2026','Sep 2026','Oct 2026','Nov 2026',
+    'Dec 2026','Jan 2027','Feb 2027','Mar 2027','Apr 2027','May 2027','Jun 2027'];
+  const rows = [];
+  let krakenAccum = 0;
+  const monthlyExp = getMonthlyExpenses();
+  projMonths.forEach((mo, i) => {
+    const interest = calcIDFCInterest(bank);
+    const net = SALARY_INR + interest + staking - monthlyExp;
+    const nw  = bank + krakenBase + krakenAccum + BANK_KOTAK;
+    rows.push({ mo, bank, interest, staking, salary:SALARY_INR, expenses:monthlyExp, net, nw, projected: i > 0 });
+    bank        += interest + SALARY_INR - monthlyExp;
+    krakenAccum += staking;
+  });
+  return rows;
+}
+
+// ══════════════════════════════════════════
+// LIVE API FETCHING — multi-source with fallbacks
+// ══════════════════════════════════════════
+async function fetchLiveRates() {
+  const pill = document.getElementById('livePill');
+
+  // USD/INR — try 3 sources in order
+  const tryFx = async () => {
+    const srcs = [
+      async () => { const r=await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json'); const d=await r.json(); const v=d.usd.inr; if(v>50&&v<200)return v; throw 0; },
+      async () => { const r=await fetch('https://api.frankfurter.app/latest?from=USD&to=INR'); const d=await r.json(); const v=d.rates.INR; if(v>50&&v<200)return v; throw 0; },
+      async () => { const r=await fetch('https://api.exchangerate-api.com/v4/latest/USD'); const d=await r.json(); const v=d.rates.INR; if(v>50&&v<200)return v; throw 0; },
+    ];
+    for (const s of srcs) { try { LIVE.usdInr=await s(); return true; } catch(e) {} }
+    return false;
+  };
+
+  // ETH + SOL — try 3 sources in order
+  const tryCrypto = async () => {
+    const srcs = [
+      async () => {
+        const [r1,r2]=await Promise.all([fetch('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'),fetch('https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT')]);
+        const [e,s]=await Promise.all([r1.json(),r2.json()]);
+        const ev=parseFloat(e.price),sv=parseFloat(s.price);
+        if(ev>100&&sv>0){LIVE.eth=ev;LIVE.sol=sv;return true;} throw 0;
+      },
+      async () => {
+        const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,solana&vs_currencies=usd');
+        const d=await r.json();
+        if(d.ethereum?.usd>100){LIVE.eth=d.ethereum.usd;LIVE.sol=d.solana.usd;return true;} throw 0;
+      },
+      async () => {
+        const r=await fetch('https://api.coincap.io/v2/assets?ids=ethereum,solana');
+        const d=await r.json();
+        const eth=d.data.find(a=>a.id==='ethereum'),sol=d.data.find(a=>a.id==='solana');
+        const ev=parseFloat(eth.priceUsd),sv=parseFloat(sol.priceUsd);
+        if(ev>100){LIVE.eth=ev;LIVE.sol=sv;return true;} throw 0;
+      },
+    ];
+    for (const s of srcs) { try { const ok=await s(); if(ok)return true; } catch(e) {} }
+    return false;
+  };
+
+  const [fxOk, cryptoOk] = await Promise.all([tryFx(), tryCrypto()]);
+  const anyOk = fxOk || cryptoOk;
+  LIVE.loaded = anyOk;
+  LIVE.lastFetch = anyOk ? new Date() : LIVE.lastFetch;
+  if (pill) { pill.textContent = anyOk?'Live':'Offline'; pill.className = anyOk?'pill live':'pill'; }
+
+  updateLiveValues();
+  fetchInflation();
+  fetchWalletBalances();
+  setTimeout(fetchLiveRates, 5 * 60 * 1000);
+}
+
+// ══════════════════════════════════════════
+// INFLATION DATA (World Bank API)
+// ══════════════════════════════════════════
+const INFLATION = { india: null, global: null };
+async function fetchInflation() {
+  try {
+    const [ri, rg] = await Promise.all([
+      fetch('https://api.worldbank.org/v2/country/IN/indicator/FP.CPI.TOTL.ZG?format=json&mrv=2&per_page=2'),
+      fetch('https://api.worldbank.org/v2/country/1W/indicator/FP.CPI.TOTL.ZG?format=json&mrv=2&per_page=2'),
+    ]);
+    const [di, dg] = await Promise.all([ri.json(), rg.json()]);
+    const findVal = arr => { const d=arr[1]; for(const r of d){if(r.value!=null)return {v:+r.value.toFixed(1),yr:r.date};} return null; };
+    INFLATION.india  = findVal(di);
+    INFLATION.global = findVal(dg);
+    const el = document.getElementById('inflationRow');
+    if (el && INFLATION.india) {
+      el.innerHTML = `🇮🇳 India CPI <strong>${INFLATION.india.v}%</strong> (${INFLATION.india.yr}) &nbsp;·&nbsp; 🌐 Global <strong>${INFLATION.global?.v??'—'}%</strong>`;
+      el.style.display = 'flex';
+    }
+  } catch(e) { /* silent — inflation data is supplemental */ }
+}
+
+// ══════════════════════════════════════════
+// DOM UPDATE WITH LIVE VALUES
+// ══════════════════════════════════════════
+function setText(id, val) { const e=document.getElementById(id); if(e) e.textContent=val; }
+
+function updateLiveValues() {
+  const kUSD = krakenUSD(), kINR = krakenINR(), nw = totalNW(), stk = stakingINR();
+  const lastInterest = calcIDFCInterest(BANK_IDFC); // live tiered calculation
+
+  // Sidebar
+  setText('sideRate', '₹' + LIVE.usdInr.toFixed(2));
+  setText('sideEth',  '$' + Math.round(LIVE.eth).toLocaleString());
+  setText('sideSol',  '$' + LIVE.sol.toFixed(0));
+  setText('sideRateTs', LIVE.lastFetch
+    ? '● Live · ' + LIVE.lastFetch.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+    : '○ Using fallback rates');
+
+  // KPI
+  setText('kpiNW',       '₹' + (nw/1e7).toFixed(2) + ' Cr');
+  const PROJ_ROWS = buildProjection();
+  const finalNW = PROJ_ROWS[PROJ_ROWS.length-1].nw;
+  const growthPct = ((finalNW - nw)/nw*100).toFixed(1);
+  document.getElementById('kpiNWSub').innerHTML =
+    '$' + Math.round(nw/LIVE.usdInr).toLocaleString() +
+    ' &nbsp;·&nbsp; <span class="pos">↑ ₹' + (finalNW/1e7).toFixed(2) + ' Cr by Jun 2027</span>';
+  setText('kpiKraken',    '$' + Math.round(kUSD).toLocaleString());
+  setText('kpiKrakenSub', '₹' + (kINR/1e5).toFixed(1) + ' L · ETH $' + Math.round(LIVE.eth) + ' · SOL $' + LIVE.sol.toFixed(0));
+  setText('kpiPassive',   INR(lastInterest + stk));
+  setText('kpiPassiveSub','Bank ₹' + Math.round(lastInterest/1000) + 'K + Staking ' + INR(stk));
+
+  // Holdings
+  setText('hEthQty',  HOLDINGS.eth.toFixed(4) + ' ETH · $' + Math.round(LIVE.eth) + '/ETH');
+  setText('hEthINR',  INR(HOLDINGS.eth * LIVE.eth * LIVE.usdInr));
+  setText('hEthUSD',  '$' + Math.round(HOLDINGS.eth * LIVE.eth).toLocaleString());
+  setText('hSolQty',  HOLDINGS.sol.toFixed(4) + ' SOL · $' + LIVE.sol.toFixed(2) + '/SOL');
+  setText('hSolINR',  INR(HOLDINGS.sol * LIVE.sol * LIVE.usdInr));
+  setText('hSolUSD',  '$' + Math.round(HOLDINGS.sol * LIVE.sol).toLocaleString());
+  setText('hUsdcINR', INR(HOLDINGS.usdc * LIVE.usdInr));
+  setText('hUsdtINR', INR(HOLDINGS.usdt * LIVE.usdInr));
+  setText('hUsdINR',  INR(HOLDINGS.usdCash * LIVE.usdInr));
+
+  // Projections page assumptions
+  setText('projUsdInr',     '₹' + LIVE.usdInr.toFixed(2));
+  setText('projStakingAmt', '$' + ACTUAL_STAKING_USD.toFixed(0) + '/mo');
+  setText('projStakingINR', '≈ ' + INR(stk) + ' at live rate');
+  setText('projFinalNW',    '₹' + (finalNW/1e7).toFixed(2) + ' Cr');
+  setText('projGrowth',     '+' + growthPct + '%');
+  setText('projPassive',    INR(lastInterest + stk));
+
+  // Portfolio table
+  rebuildPortfolioTable();
+  renderAccounts();
+
+  // Update any already-initialized charts
+  if (CR.allocChart)     updateAllocChart();
+  if (CR.portfolioPie)   updatePortfolioPie();
+  if (CR.krakenPie)      updateKrakenPie();
+  if (CR.nwProjectionChart) rebuildProjectionChart();
+  if (CR.interestProjChart) rebuildInterestProjChart();
+  if (CR.nwIndexCompareChart) rebuildIndexCompareChart();
+  if (CR.interestCompareChart) updateIndexComparison();
+  if (CR.passivePieChart) updatePassivePie();
+
+  // Inflight
+  renderInflight();
+}
+
+// ══════════════════════════════════════════
+// PORTFOLIO TABLE
+// ══════════════════════════════════════════
+function rebuildPortfolioTable() {
+  const tb = document.getElementById('ptblBody');
+  if (!tb) return;
+  const ethINR  = HOLDINGS.eth * LIVE.eth * LIVE.usdInr;
+  const solINR  = HOLDINGS.sol * LIVE.sol * LIVE.usdInr;
+  const usdcINR = HOLDINGS.usdc * LIVE.usdInr;
+  const usdtINR = HOLDINGS.usdt * LIVE.usdInr;
+  const usdINR  = HOLDINGS.usdCash * LIVE.usdInr;
+  const bankINR = BANK_IDFC + BANK_KOTAK + (typeof customBankINR==='function'?customBankINR():0);
+  // ETH wallets (CUSTOM_ACCS)
+  const walletRows = CUSTOM_ACCS.filter(a=>a.type==='wallet'&&(a.balanceEth||a.tokensUSD)).map(a=>({
+    l: a.name,
+    v: walletTotalINR(a),
+    c: a.color||'#0F766E',
+    note: (a.balanceEth||0).toFixed(4)+' ETH'+(a.tokensUSD>0?' + $'+a.tokensUSD.toFixed(0)+' tokens':'')
+  }));
+  const walletTotal = walletRows.reduce((s,r)=>s+r.v,0);
+  const customBankRows = CUSTOM_ACCS.filter(a=>a.type==='bank').map(a=>({
+    l: a.name, v:(a.balanceINR||0), c:a.color||'#1D4ED8', note:a.note||''
+  }));
+  const total = bankINR + ethINR + solINR + usdcINR + usdtINR + usdINR + walletTotal;
+  const rows = [
+    { l:'Bank Accounts',   v:bankINR, c:'#1D4ED8', note:'Primary + Secondary'+(customBankRows.length?' + '+customBankRows.length+' more':'') },
+    { l:'USDC Stablecoin', v:usdcINR, c:'#D97706', note:'Exchange · stablecoin' },
+    { l:'Exchange USD Cash', v:usdINR,  c:'#15803D', note:'Earn + Spot wallets' },
+    { l:'USDT Stablecoin', v:usdtINR, c:'#7C3AED', note:'Exchange · stablecoin' },
+    { l:'Ethereum (ETH)',  v:ethINR,  c:'#0284C7', note:HOLDINGS.eth.toFixed(4)+' ETH · $'+Math.round(LIVE.eth)+'/ETH' },
+    { l:'Solana (SOL)',    v:solINR,  c:'#C2410C', note:HOLDINGS.sol.toFixed(4)+' SOL · $'+LIVE.sol.toFixed(2)+'/SOL' },
+    ...walletRows,
+  ];
+  tb.innerHTML = rows.map(r => `<tr>
+    <td><span class="asset-dot" style="background:${r.c}"></span>${r.l}</td>
+    <td>${INR(r.v)}</td>
+    <td>$${Math.round(r.v/LIVE.usdInr).toLocaleString()}</td>
+    <td><span class="pct-badge" style="background:${r.c}22;color:${r.c}">${(r.v/total*100).toFixed(1)}%</span></td>
+    <td style="color:var(--muted);font-size:12px">${r.note}</td>
+  </tr>`).join('') + `<tr style="background:var(--s2);font-weight:700">
+    <td>Total</td><td>${INR(total)}</td><td>$${Math.round(total/LIVE.usdInr).toLocaleString()}</td><td>100%</td><td></td>
+  </tr>`;
+}
+
+// Chart update helpers
+function updateAllocChart() {
+  if (!CR.allocChart) return;
+  const d = [BANK_IDFC+BANK_KOTAK, HOLDINGS.usdc*LIVE.usdInr, HOLDINGS.usdCash*LIVE.usdInr,
+             HOLDINGS.usdt*LIVE.usdInr, HOLDINGS.eth*LIVE.eth*LIVE.usdInr, HOLDINGS.sol*LIVE.sol*LIVE.usdInr];
+  const tot = d.reduce((a,b)=>a+b,0);
+  CR.allocChart.data.datasets[0].data = d;
+  CR.allocChart.options.plugins.tooltip.callbacks.label = ctx => ' '+INR(ctx.raw)+' ('+( ctx.raw/tot*100).toFixed(1)+'%)';
+  CR.allocChart.update('none');
+}
+function updatePortfolioPie() {
+  if (!CR.portfolioPie) return;
+  const d = [BANK_IDFC+BANK_KOTAK, HOLDINGS.usdc*LIVE.usdInr, HOLDINGS.usdCash*LIVE.usdInr,
+             HOLDINGS.usdt*LIVE.usdInr, HOLDINGS.eth*LIVE.eth*LIVE.usdInr, HOLDINGS.sol*LIVE.sol*LIVE.usdInr];
+  const tot = d.reduce((a,b)=>a+b,0);
+  CR.portfolioPie.data.datasets[0].data = d;
+  CR.portfolioPie.options.plugins.tooltip.callbacks.label = ctx => ' '+INR(ctx.raw)+' ('+(ctx.raw/tot*100).toFixed(1)+'%)';
+  CR.portfolioPie.update('none');
+}
+function updateKrakenPie() {
+  if (!CR.krakenPie) return;
+  const ethUSD = HOLDINGS.eth*LIVE.eth, solUSD = HOLDINGS.sol*LIVE.sol;
+  CR.krakenPie.data.datasets[0].data = [HOLDINGS.usdCash, HOLDINGS.usdc, HOLDINGS.usdt, ethUSD, solUSD];
+  CR.krakenPie.data.labels = [
+    'USD Cash ($'+Math.round(HOLDINGS.usdCash).toLocaleString()+')',
+    'USDC ($'+Math.round(HOLDINGS.usdc).toLocaleString()+')',
+    'USDT ($'+Math.round(HOLDINGS.usdt).toLocaleString()+')',
+    'ETH ($'+Math.round(ethUSD).toLocaleString()+')',
+    'SOL ($'+Math.round(solUSD).toLocaleString()+')',
+  ];
+  CR.krakenPie.update('none');
+}
+function updatePassivePie() {
+  if (!CR.passivePieChart) return;
+  const stk = stakingINR();
+  CR.passivePieChart.data.datasets[0].data = [0, stk];
+  CR.passivePieChart.update('none');
+}
+</script>
+<script>
+// ══════════════════════════════════════════
+// TRANSACTIONS DATA
+// ══════════════════════════════════════════
+const TRANSACTIONS = [
+  ["01-Apr-26","Salary Credit","Salary","Primary Bank","Income",80000],
+  ["02-Apr-26","Streaming Subscription","Subscriptions","Primary Bank","Expense",499],
+  ["03-Apr-26","UPI – Groceries","Groceries","Primary Bank","Expense",2150],
+  ["05-Apr-26","Electricity Bill","Utilities","Primary Bank","Expense",1850],
+  ["05-Apr-26","ATM Cash Withdrawal","Other","Primary Bank","Expense",5000],
+  ["06-Apr-26","UPI – Lunch","Dining","Primary Bank","Expense",420],
+  ["07-Apr-26","Fuel","Transport","Primary Bank","Expense",1200],
+  ["09-Apr-26","Accounting Software","Operating Costs","Primary Bank","Expense",1500],
+  ["11-Apr-26","Airport Lounge","Travel","Primary Bank","Expense",1800],
+  ["12-Apr-26","UPI – Friend Repayment","Transfer","Primary Bank","Income",950],
+  ["15-Apr-26","Rent","Housing","Primary Bank","Expense",25000],
+  ["18-Apr-26","Online Shopping","Shopping","Primary Bank","Expense",1261],
+  ["20-Apr-26","Mobile Recharge","Utilities","Primary Bank","Expense",299],
+  ["22-Apr-26","Food Delivery","Dining","Primary Bank","Expense",680],
+  ["23-Apr-26","Health Insurance Premium","Insurance","Primary Bank","Expense",2400],
+  ["25-Apr-26","UPI – Family Transfer","Transfer","Primary Bank","Expense",10000],
+  ["26-Apr-26","Online Course","Education","Primary Bank","Expense",2999],
+  ["27-Apr-26","Medicine","Healthcare","Primary Bank","Expense",750],
+  ["28-Apr-26","Gym Membership","Health","Primary Bank","Expense",1500],
+  ["29-Apr-26","Bank Interest Credit","Investment Returns","Primary Bank","Income",2800],
+  ["30-Apr-26","Exchange Earn Rewards – April 2026","Investment Returns","Exchange","Income",2050],
+  ["01-May-26","Salary Credit","Salary","Primary Bank","Income",80000],
+  ["02-May-26","Streaming Subscription","Subscriptions","Primary Bank","Expense",499],
+  ["05-May-26","Electricity Bill","Utilities","Primary Bank","Expense",1750],
+  ["10-May-26","UPI – Groceries","Groceries","Primary Bank","Expense",2400],
+  ["12-May-26","Food Delivery","Dining","Primary Bank","Expense",520],
+  ["15-May-26","Rent","Housing","Primary Bank","Expense",25000],
+  ["18-May-26","Fuel","Transport","Primary Bank","Expense",1100],
+  ["22-May-26","Online Shopping","Shopping","Primary Bank","Expense",899],
+  ["28-May-26","Bank Interest Credit","Investment Returns","Primary Bank","Income",2900],
+  ["30-May-26","Exchange Earn Rewards – May 2026","Investment Returns","Exchange","Income",2100],
+];
+
+// ══════════════════════════════════════════
+// LOCALSTORAGE PERSISTENCE
+// ══════════════════════════════════════════
+let TX_OVERRIDES   = JSON.parse(localStorage.getItem('tx_overrides')    || '{}');
+let MANUAL_ENTRIES = JSON.parse(localStorage.getItem('manual_entries')  || '[]');
+let MONTHLY_MEMOS  = JSON.parse(localStorage.getItem('monthly_memos')   || '{}');
+let INFLIGHT       = JSON.parse(localStorage.getItem('inflight_entries')|| '[]');
+
+const ALL_CATS = ['Shopping','Utilities','Donations','Education','Operating Costs','Healthcare',
+  'Subscriptions','Travel','Food & Dining','Bike','Home Renovation','Taxes',
+  'Groceries','Freelance','Investment Returns','Transfer','Other'];
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+const INR = n => '₹' + Math.round(n).toLocaleString('en-IN');
+
+function monthKey(dt) {
+  const [,m,y] = dt.split('-');
+  const map={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  return '20'+y+'-'+(map[m]||m);
+}
+
+function getAllTransactions() {
+  const base = TRANSACTIONS.map((t, i) => {
+    const cat = TX_OVERRIDES[i] || t[2];
+    return [t[0], t[1], cat, t[3], t[4], t[5], i, false];
+  });
+  const manual = MANUAL_ENTRIES.map((e, i) => {
+    const d = new Date(e.date);
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+    const yy = String(d.getFullYear()).slice(-2);
+    return [dd+'-'+mo+'-'+yy, e.desc, e.cat, e.acct, e.type, e.amt, 'M'+i, true];
+  });
+  return [...base, ...manual];
+}
+
+const MONTHS = ['2026-04','2026-05','2026-06'];
+const ML     = ['Apr 2026','May 2026','Jun 2026'];
+
+function getCategoryTotals(monthStr, type) {
+  const all = getAllTransactions();
+  const totals = {};
+  all.filter(t => monthKey(t[0]) === monthStr && t[4] === type).forEach(t => {
+    totals[t[2]] = (totals[t[2]] || 0) + t[5];
+  });
+  return totals;
+}
+
+// ══════════════════════════════════════════
+// MEMO
+// ══════════════════════════════════════════
+function saveMemo() {
+  const key = 'Apr-Jun 2026';
+  MONTHLY_MEMOS[key] = document.getElementById('memoText').value;
+  localStorage.setItem('monthly_memos', JSON.stringify(MONTHLY_MEMOS));
+  setText('memoStatus', 'Saved ✓');
+  setTimeout(() => setText('memoStatus', ''), 2000);
+}
+function loadMemo() {
+  const el = document.getElementById('memoText');
+  if (el) el.value = MONTHLY_MEMOS['Apr-Jun 2026'] || '';
+}
+
+// ══════════════════════════════════════════
+// MANUAL ENTRY CRUD
+// ══════════════════════════════════════════
+function toggleManualForm() {
+  const f = document.getElementById('manualForm');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+function addManualEntry() {
+  const date = document.getElementById('meDate').value;
+  const desc = document.getElementById('meDesc').value.trim();
+  const cat  = document.getElementById('meCat').value;
+  const type = document.getElementById('meType').value;
+  const acct = document.getElementById('meAcct').value;
+  const amt  = parseFloat(document.getElementById('meAmt').value);
+  if (!date || !desc || !amt) { alert('Fill in Date, Description and Amount'); return; }
+  MANUAL_ENTRIES.push({ date, desc, cat, type, acct, amt });
+  localStorage.setItem('manual_entries', JSON.stringify(MANUAL_ENTRIES));
+  document.getElementById('meDate').value = '';
+  document.getElementById('meDesc').value = '';
+  document.getElementById('meAmt').value  = '';
+  filterTxns();
+}
+function deleteManualEntry(idx) {
+  MANUAL_ENTRIES.splice(idx, 1);
+  localStorage.setItem('manual_entries', JSON.stringify(MANUAL_ENTRIES));
+  filterTxns();
+}
+
+// ══════════════════════════════════════════
+// CATEGORY EDIT (inline)
+// ══════════════════════════════════════════
+function editCat(idx) {
+  const el = document.getElementById('catcell-'+idx);
+  if (!el) return;
+  const cur = TX_OVERRIDES[idx] || TRANSACTIONS[idx][2];
+  el.innerHTML = '<select class="cat-edit-sel" onchange="saveCat('+idx+',this.value)" onblur="filterTxns()">'
+    + ALL_CATS.map(c => '<option'+(c===cur?' selected':'')+'>'+c+'</option>').join('')
+    + '</select>';
+  el.querySelector('select').focus();
+}
+function saveCat(idx, cat) {
+  TX_OVERRIDES[idx] = cat;
+  localStorage.setItem('tx_overrides', JSON.stringify(TX_OVERRIDES));
+  filterTxns();
+}
+
+// ══════════════════════════════════════════
+// TRANSACTION TABLE
+// ══════════════════════════════════════════
+function renderTxns(data) {
+  const body = document.getElementById('txnBody');
+  body.innerHTML = '';
+  data.forEach(([dt, desc, cat, acc, type, amt, idx, isManual]) => {
+    const flagged  = desc.includes('⚠');
+    const clean    = desc.replace(' ⚠','');
+    const tCls     = type==='Income'?'tag-income':type==='Expense'?'tag-expense':'tag-transfer';
+    const aColor   = type==='Income'?'var(--green)':type==='Expense'?'var(--red)':'var(--purple)';
+    const sign     = type==='Income'?'+':type==='Expense'?'−':'';
+    const short    = acc.replace(' Bank','').replace(' Mahindra','').replace(' Exchange','');
+    const catCell  = isManual
+      ? `<td style="font-size:12px;color:var(--muted)">${cat}</td>`
+      : `<td id="catcell-${idx}" style="font-size:12px;color:var(--muted);cursor:pointer" title="Click to edit" onclick="editCat(${idx})">${cat} <span class="edit-icon">✎</span></td>`;
+    const delBtn   = isManual
+      ? `<td style="text-align:right;padding-right:8px"><button class="btn-danger" onclick="deleteManualEntry(${typeof idx==='string'?idx.slice(1):idx})">×</button></td>`
+      : '';
+    body.innerHTML += `<tr${flagged?' class="flagged"':''}>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap">${dt}</td>
+      <td>${flagged?'<span style="color:var(--amber);font-weight:700;margin-right:5px">⚠</span>':''}<span style="font-weight:500">${clean}</span>${isManual?'<span style="font-size:10px;color:var(--faint);margin-left:5px">[manual]</span>':''}</td>
+      <td style="font-size:12px;color:var(--muted)">${short}</td>
+      ${catCell}
+      <td><span class="tag ${tCls}">${type}</span></td>
+      <td style="text-align:right;font-weight:700;color:${aColor};font-variant-numeric:tabular-nums;white-space:nowrap">${sign}${INR(amt)}</td>
+      ${delBtn}
+    </tr>`;
+  });
+  document.getElementById('txnCount').textContent = 'Showing '+data.length+' of '+(TRANSACTIONS.length+MANUAL_ENTRIES.length)+' transactions';
+}
+
+let TXN_TAB = 'all';
+
+function setTxnTab(tab) {
+  TXN_TAB = tab;
+  ['all','monthly','weekly'].forEach(t => {
+    const btn = document.getElementById('txnTab'+t.charAt(0).toUpperCase()+t.slice(1));
+    if (btn) btn.classList.toggle('active', t===tab);
+  });
+  const titles = { all:'All Transactions', monthly:'Monthly Breakdown', weekly:'Weekly Breakdown' };
+  const el = document.getElementById('txnCardTitle');
+  if (el) el.textContent = titles[tab] || 'Transactions';
+  filterTxns();
+}
+
+function filterTxns() {
+  const q  = (document.getElementById('txnSearch')?.value||'').toLowerCase();
+  const tp = document.getElementById('txnType')?.value||'';
+  const ct = document.getElementById('txnCat')?.value||'';
+  const all = getAllTransactions();
+  const filtered = all.filter(([,desc,cat,,type])=>
+    (!q||desc.toLowerCase().includes(q)||cat.toLowerCase().includes(q))&&
+    (!tp||type===tp)&&(!ct||cat===ct)
+  );
+
+  if (TXN_TAB === 'all') {
+    renderTxns(filtered);
+    return;
+  }
+
+  // Group by period
+  const INR_fmt = v => v.toLocaleString('en-IN',{maximumFractionDigits:0});
+  const getKey = row => {
+    const d = new Date(row[0]+'T00:00:00');
+    if (TXN_TAB === 'monthly') {
+      return d.toLocaleString('en-IN',{month:'long',year:'numeric'});
+    } else {
+      // ISO week: Mon–Sun
+      const day  = d.getDay() || 7; // Mon=1
+      const mon  = new Date(d); mon.setDate(d.getDate()-(day-1));
+      const sun  = new Date(mon); sun.setDate(mon.getDate()+6);
+      const fmt  = dt => dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+      return fmt(mon)+' – '+fmt(sun);
+    }
+  };
+
+  const groups = {};
+  filtered.forEach(row => {
+    const k = getKey(row);
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(row);
+  });
+
+  const tbody = document.getElementById('txnBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  let total = 0;
+
+  Object.entries(groups).forEach(([period, rows]) => {
+    // Group header row
+    const income  = rows.filter(r=>r[4]==='Income').reduce((s,r)=>s+r[5],0);
+    const expense = rows.filter(r=>r[4]==='Expense').reduce((s,r)=>s+r[5],0);
+    tbody.innerHTML += `<tr class="txn-group-row">
+      <td colspan="6">${period}
+        <span class="txn-group-total" style="color:var(--green)">+₹${INR_fmt(income)}</span>
+        <span class="txn-group-total" style="color:var(--red);margin-right:12px">−₹${INR_fmt(expense)}</span>
+      </td></tr>`;
+    // Then render individual rows (no re-render call — inline)
+    rows.forEach(([date,desc,cat,acct,type,amt], _) => {
+      const tCls  = type==='Income'?'tag-income':type==='Expense'?'tag-expense':'tag-transfer';
+      const sign  = type==='Income'?'+':type==='Expense'?'−':'';
+      const aColor= type==='Income'?'var(--green)':type==='Expense'?'var(--red)':'var(--muted)';
+      tbody.innerHTML += `<tr>
+        <td style="color:var(--muted);white-space:nowrap">${date}</td>
+        <td>${desc}</td><td style="color:var(--muted)">${acct}</td>
+        <td><span class="tag" style="background:var(--s2);color:var(--muted)">${cat}</span></td>
+        <td><span class="tag ${tCls}">${type}</span></td>
+        <td style="text-align:right;font-weight:700;color:${aColor};font-variant-numeric:tabular-nums;white-space:nowrap">${sign}${INR(amt)}</td>
+      </tr>`;
+      total++;
+    });
+  });
+  document.getElementById('txnCount').textContent = 'Showing '+total+' transactions in '+Object.keys(groups).length+' groups';
+}
+
+// ══════════════════════════════════════════
+// INFLIGHT
+// ══════════════════════════════════════════
+function addInflightEntry() {
+  const asset  = document.getElementById('ifAsset').value;
+  const amtUSD = parseFloat(document.getElementById('ifAmtUSD').value)||0;
+  const rateAt = parseFloat(document.getElementById('ifRateAt').value)||LIVE.usdInr;
+  const status = document.getElementById('ifStatus').value;
+  const dateIn = document.getElementById('ifDateIn').value;
+  const dateEx = document.getElementById('ifDateEx').value;
+  const notes  = document.getElementById('ifNotes').value.trim();
+  if (!amtUSD) { alert('Enter amount in USD'); return; }
+  INFLIGHT.push({ id:Date.now(), asset, amtUSD, rateAt, status, dateIn, dateEx, notes });
+  localStorage.setItem('inflight_entries', JSON.stringify(INFLIGHT));
+  document.getElementById('ifAmtUSD').value = '';
+  document.getElementById('ifNotes').value  = '';
+  document.getElementById('ifRateAt').value = '';
+  renderInflight();
+}
+function deleteInflight(id) {
+  INFLIGHT = INFLIGHT.filter(e => e.id !== id);
+  localStorage.setItem('inflight_entries', JSON.stringify(INFLIGHT));
+  renderInflight();
+}
+function updateInflightStatus(id, status) {
+  const e = INFLIGHT.find(e => e.id === id);
+  if (e) { e.status = status; localStorage.setItem('inflight_entries', JSON.stringify(INFLIGHT)); }
+}
+function renderInflight() {
+  const totalUSD = INFLIGHT.reduce((s,e)=>s+e.amtUSD,0);
+  const liveINR  = totalUSD * LIVE.usdInr;
+  const initINR  = INFLIGHT.reduce((s,e)=>s+e.amtUSD*e.rateAt,0);
+  const fxDiff   = liveINR - initINR;
+  setText('ifTotalUSD', '$'+totalUSD.toLocaleString('en-US',{maximumFractionDigits:0}));
+  setText('ifTotalINR', INR(liveINR));
+  setText('ifCount',    INFLIGHT.length+' entr'+(INFLIGHT.length===1?'y':'ies'));
+  setText('ifRateNote', 'at ₹'+LIVE.usdInr.toFixed(2)+'/USD');
+  if (document.getElementById('ifFxDiff')) {
+    const el = document.getElementById('ifFxDiff');
+    el.textContent = (fxDiff>=0?'+':'')+INR(fxDiff);
+    el.style.color = fxDiff>=0?'var(--green)':'var(--red)';
+  }
+  const tbody = document.getElementById('ifBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (INFLIGHT.length===0) {
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--faint);padding:36px">No inflight entries. Add an offramp above.</td></tr>';
+    return;
+  }
+  INFLIGHT.forEach(e => {
+    const liveVal = e.amtUSD * LIVE.usdInr;
+    const initVal = e.amtUSD * e.rateAt;
+    const diff    = liveVal - initVal;
+    const stCls   = e.status==='Pending'?'status-pending':e.status==='In Transit'?'status-transit':'status-settled';
+    tbody.innerHTML += `<tr>
+      <td><strong>${e.asset}</strong></td>
+      <td style="font-variant-numeric:tabular-nums">$${e.amtUSD.toLocaleString()}</td>
+      <td style="font-variant-numeric:tabular-nums">${INR(liveVal)}</td>
+      <td style="color:${diff>=0?'var(--green)':'var(--red)'};font-size:12px">${diff>=0?'+':''}${INR(diff)}</td>
+      <td style="font-size:12px;color:var(--muted)">${e.dateIn||'—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${e.dateEx||'—'}</td>
+      <td style="font-size:12px;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis">${e.notes||'—'}</td>
+      <td><select class="tag ${stCls}" style="border:none;cursor:pointer;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:inherit;color:inherit" onchange="updateInflightStatus(${e.id},this.value)">
+        <option ${e.status==='Pending'?'selected':''}>Pending</option>
+        <option ${e.status==='In Transit'?'selected':''}>In Transit</option>
+        <option ${e.status==='Settled'?'selected':''}>Settled</option>
+      </select></td>
+      <td><button class="btn-danger" onclick="deleteInflight(${e.id})">×</button></td>
+    </tr>`;
+  });
+  // pre-fill live rate in form
+  const rateEl = document.getElementById('ifRateAt');
+  if (rateEl && !rateEl.value) rateEl.placeholder = '₹'+LIVE.usdInr.toFixed(2)+' (live)';
+}
+</script>
+<script>
+// ══════════════════════════════════════════
+// CHART THEME
+// ══════════════════════════════════════════
+Chart.defaults.color       = '#A8A29E';
+Chart.defaults.font.family = "'Inter',sans-serif";
+Chart.defaults.font.size   = 11;
+Chart.defaults.font.weight = '500';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyle    = 'circle';
+Chart.defaults.plugins.legend.labels.padding       = 16;
+
+const GRID    = 'rgba(0,0,0,0.055)';
+const TICK    = '#A8A29E';
+const PALETTE = ['#1D4ED8','#D97706','#15803D','#7C3AED','#0F766E','#C2410C','#DC2626','#0284C7','#BE185D'];
+
+const CR = {};
+function mkChart(id, cfg) {
+  if (CR[id]) { CR[id].destroy(); }
+  CR[id] = new Chart(document.getElementById(id), cfg);
+  return CR[id];
+}
+
+// ══════════════════════════════════════════
+// OVERVIEW CHARTS
+// ══════════════════════════════════════════
+function initOverview() {
+  if (CONFIG.ownerName && CONFIG.ownerName !== 'Your Name') {
+    setText('brandSub', CONFIG.ownerName + ' · FY 2026');
+  }
+  setText('assumeSalary', INR(CONFIG.monthlyNetSalary));
+  const PROJ = buildProjection();
+  const nwLabels = PROJ.map(r => r.mo.replace(' 20',"'"));
+  const nwVals   = PROJ.map(r => +(r.nw/1e7).toFixed(3));
+  mkChart('nwPreviewChart', {
+    type:'line',
+    data:{ labels:nwLabels, datasets:[
+      { label:'Current', data:[nwVals[0],...Array(12).fill(null)],
+        borderColor:'#1D4ED8', backgroundColor:'rgba(29,78,216,0.1)',
+        borderWidth:3, fill:true, tension:0.4,
+        pointRadius:6, pointBackgroundColor:'#1D4ED8', pointBorderColor:'#fff', pointBorderWidth:2, order:1 },
+      { label:'Projected', data:nwVals,
+        borderColor:'#1D4ED8', backgroundColor:'rgba(29,78,216,0.04)',
+        borderWidth:2, borderDash:[7,5], fill:true, tension:0.4,
+        pointRadius:4, pointBackgroundColor:'#fff', pointBorderColor:'#1D4ED8', pointBorderWidth:2, order:2 }
+    ]},
+    options:{ responsive:true, interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{labels:{color:TICK}}, tooltip:{callbacks:{label:ctx=>' ₹'+ctx.raw.toFixed(2)+' Cr'}} },
+      scales:{ x:{ticks:{color:TICK,maxRotation:0},grid:{color:GRID},border:{display:false}},
+               y:{ticks:{color:TICK,callback:v=>'₹'+v.toFixed(1)+'Cr'},grid:{color:GRID},border:{display:false}} } }
+  });
+  const walletINR = walletETH()*LIVE.eth*LIVE.usdInr;
+  const d = [BANK_IDFC+BANK_KOTAK+customBankINR(), HOLDINGS.usdc*LIVE.usdInr, HOLDINGS.usdCash*LIVE.usdInr,
+             HOLDINGS.usdt*LIVE.usdInr, HOLDINGS.eth*LIVE.eth*LIVE.usdInr, HOLDINGS.sol*LIVE.sol*LIVE.usdInr, walletINR];
+  const tot = d.reduce((a,b)=>a+b,0);
+  mkChart('allocChart', {
+    type:'doughnut',
+    data:{ labels:['Bank Accounts','USDC','USD Cash','USDT','ETH (Exchange)','SOL','ETH Wallets'], datasets:[{
+      data:d, backgroundColor:[...PALETTE,'#0F766E'], borderWidth:3, borderColor:'#fff', hoverOffset:8
+    }]},
+    options:{ responsive:true, cutout:'65%',
+      plugins:{ legend:{position:'right',labels:{color:TICK,padding:12}},
+        tooltip:{callbacks:{label:ctx=>' '+INR(ctx.raw)+' ('+(ctx.raw/tot*100).toFixed(1)+'%)'}} } }
+  });
+  renderAccounts();
+}
+
+// ══════════════════════════════════════════
+// CASH FLOW CHARTS
+// ══════════════════════════════════════════
+function initCashFlow() {
+  loadMemo();
+
+  // Monthly income vs expense
+  const MONTHS_KEYS = ['2026-04','2026-05','2026-06'];
+  const mI={}, mE={};
+  MONTHS_KEYS.forEach(m=>{mI[m]=0;mE[m]=0;});
+  getAllTransactions().forEach(([dt,,,,tp,amt])=>{
+    const m=monthKey(dt);
+    if(MONTHS_KEYS.includes(m)){if(tp==='Income')mI[m]+=amt;if(tp==='Expense')mE[m]+=amt;}
+  });
+  mkChart('monthlyChart',{type:'bar',data:{labels:ML,datasets:[
+    {label:'Income',data:MONTHS_KEYS.map(m=>mI[m]),backgroundColor:'rgba(21,128,61,0.8)',borderRadius:8,borderSkipped:false,order:2},
+    {label:'Expense',data:MONTHS_KEYS.map(m=>mE[m]),backgroundColor:'rgba(220,38,38,0.75)',borderRadius:8,borderSkipped:false,order:2},
+    {label:'Net Flow',data:MONTHS_KEYS.map(m=>mI[m]-mE[m]),type:'line',borderColor:'#D97706',
+     backgroundColor:'rgba(217,119,6,0.08)',borderWidth:2.5,pointRadius:5,
+     pointBackgroundColor:'#D97706',pointBorderColor:'#fff',pointBorderWidth:2,fill:true,tension:0.3,order:1}
+  ]},options:{responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:TICK}}},
+    scales:{x:{ticks:{color:TICK},grid:{color:GRID},border:{display:false}},
+      y:{ticks:{color:TICK,callback:v=>'₹'+(v/1000).toFixed(0)+'K'},grid:{color:GRID},border:{display:false}}}}});
+
+  // Interest compare chart (IDFC vs Nifty vs S&P)
+  buildInterestCompareChart();
+
+  // Passive pie
+  mkChart('passivePieChart',{type:'doughnut',data:{
+    labels:['Bank Interest','Exchange Staking'],
+    datasets:[{data:[0,stakingINR()],backgroundColor:['#15803D','#D97706'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},
+    options:{responsive:true,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:TICK,padding:14}},
+      tooltip:{callbacks:{label:ctx=>' '+INR(ctx.raw)}}}}});
+
+  // Income categories
+  mkChart('incCatChart',{type:'doughnut',data:{
+    labels:['Freelance Salary','Bank Interest','Exchange Staking','Transfers In','Travel Refunds','Other'],
+    datasets:[{data:[0,0,0,0,0,0],backgroundColor:['#15803D','#1D4ED8','#D97706','#7C3AED','#0F766E','#A8A29E'],borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
+    options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:TICK,font:{size:10},padding:10}},
+      tooltip:{callbacks:{label:ctx=>' '+INR(ctx.raw)}}}}});
+
+  // MoM category comparison
+  buildMoMChart();
+
+  // Progress bars
+  const pb=document.getElementById('progBars');
+  if(!pb.dataset.built){pb.dataset.built='1';
+    const data=[
+      {l:'Shopping',a:94701,c:'#1D4ED8'},{l:'Other',a:34981,c:'#0284C7'},
+      {l:'Utilities',a:17964,c:'#D97706'},{l:'Operating Costs',a:3540,c:'#0F766E'},
+      {l:'Healthcare',a:4854,c:'#DC2626'},{l:'Subscriptions',a:3867,c:'#7C3AED'},
+      {l:'Travel',a:3312,c:'#C2410C'},{l:'Transfers',a:16796,c:'#15803D'},
+      {l:'Groceries',a:1682,c:'#BE185D'},{l:'Food & Dining',a:1047,c:'#A8A29E'},
+    ];
+    data.forEach(e=>{pb.innerHTML+=`<div class="prog-row">
+      <span class="prog-label">${e.l}</span>
+      <div class="prog-track"><div class="prog-fill" style="width:${(e.a/94701*100).toFixed(1)}%;background:${e.c}"></div></div>
+      <span class="prog-val">${INR(e.a)}</span></div>`;});
+  }
+}
+
+function buildMoMChart() {
+  const aprExp = getCategoryTotals('2026-04','Expense');
+  const mayExp = getCategoryTotals('2026-05','Expense');
+  const cats = [...new Set([...Object.keys(aprExp),...Object.keys(mayExp)])]
+    .sort((a,b)=>((mayExp[b]||0)+(aprExp[b]||0))-((mayExp[a]||0)+(aprExp[a]||0)));
+  mkChart('momChart',{type:'bar',data:{labels:cats,datasets:[
+    {label:'Apr 2026',data:cats.map(c=>aprExp[c]||0),backgroundColor:'rgba(29,78,216,0.65)',borderRadius:5,borderSkipped:false},
+    {label:'May 2026',data:cats.map(c=>mayExp[c]||0),backgroundColor:'rgba(220,38,38,0.65)',borderRadius:5,borderSkipped:false},
+  ]},options:{responsive:true,indexAxis:'y',interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:TICK}},tooltip:{callbacks:{label:ctx=>ctx.raw?' '+INR(ctx.raw):''}}},
+    scales:{x:{ticks:{color:TICK,callback:v=>'₹'+(v/1000).toFixed(0)+'K'},grid:{color:GRID},border:{display:false}},
+      y:{ticks:{color:TICK,font:{size:10.5}},grid:{display:false},border:{display:false}}}}});
+}
+
+function buildInterestCompareChart() {
+  const nifty = parseFloat(document.getElementById('niftyRate')?.value || 12);
+  const sp    = parseFloat(document.getElementById('spRate')?.value    || 10);
+  IDX.nifty = nifty; IDX.sp = sp;
+
+  // Historical + projected labels
+  const PROJ = buildProjection();
+  const labels = ['Apr 26','May 26',...PROJ.map(r=>r.mo.replace(' 20',"'"))];
+  const idfcHist  = [0, 0, ...Array(PROJ.length).fill(null)];
+  const idfcProj  = [null, null, ...PROJ.map(r=>+(r.interest/1000).toFixed(1))];
+  const niftyLine = labels.map(()=>+(COMPARE_OPENING*nifty/100/12/1000).toFixed(1));
+  const spLine    = labels.map(()=>+(COMPARE_OPENING*sp/100/12/1000).toFixed(1));
+
+  mkChart('interestCompareChart',{type:'line',data:{labels,datasets:[
+    {label:'Bank (Actual)',data:idfcHist,borderColor:'#15803D',backgroundColor:'rgba(21,128,61,0.1)',
+     borderWidth:3,fill:false,tension:0.4,pointRadius:6,pointBackgroundColor:'#15803D',pointBorderColor:'#fff',pointBorderWidth:2},
+    {label:'Bank (Projected)',data:idfcProj,borderColor:'#15803D',backgroundColor:'rgba(21,128,61,0.06)',
+     borderWidth:2,borderDash:[6,4],fill:false,tension:0.4,pointRadius:3,pointBackgroundColor:'#15803D'},
+    {label:'Nifty 50 equiv ('+nifty+'% p.a.)',data:niftyLine,borderColor:'#D97706',
+     backgroundColor:'transparent',borderWidth:2,borderDash:[4,3],pointRadius:0,tension:0},
+    {label:'S&P 500 equiv ('+sp+'% p.a.)',data:spLine,borderColor:'#7C3AED',
+     backgroundColor:'transparent',borderWidth:2,borderDash:[4,3],pointRadius:0,tension:0},
+  ]},options:{responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:TICK}},
+      tooltip:{callbacks:{label:ctx=>ctx.raw!==null?' ₹'+(ctx.raw*1000).toLocaleString('en-IN'):''}}},
+    scales:{
+      x:{ticks:{color:TICK,maxRotation:45},grid:{color:GRID},border:{display:false}},
+      y:{ticks:{color:TICK,callback:v=>'₹'+v+'K'},grid:{color:GRID},border:{display:false},suggestedMin:50}
+    }}});
+}
+
+function updateIndexComparison() {
+  buildInterestCompareChart();
+  rebuildIndexCompareChart();
+}
+
+// ══════════════════════════════════════════
+// PORTFOLIO CHARTS
+// ══════════════════════════════════════════
+function initPortfolio() {
+  rebuildPortfolioTable();
+  const d=[BANK_IDFC+BANK_KOTAK,HOLDINGS.usdc*LIVE.usdInr,HOLDINGS.usdCash*LIVE.usdInr,
+           HOLDINGS.usdt*LIVE.usdInr,HOLDINGS.eth*LIVE.eth*LIVE.usdInr,HOLDINGS.sol*LIVE.sol*LIVE.usdInr];
+  const tot=d.reduce((a,b)=>a+b,0);
+  mkChart('portfolioPie',{type:'doughnut',data:{
+    labels:['Cash & Bank','USDC Stable','Exchange USD','USDT Stable','ETH','SOL'],
+    datasets:[{data:d,backgroundColor:PALETTE,borderWidth:3,borderColor:'#fff',hoverOffset:8}]},
+    options:{responsive:true,cutout:'58%',plugins:{legend:{position:'bottom',labels:{color:TICK,padding:12}},
+      tooltip:{callbacks:{label:ctx=>' '+INR(ctx.raw)+' ('+(ctx.raw/tot*100).toFixed(1)+'%)'}}}}});
+  const eu=HOLDINGS.eth*LIVE.eth,su=HOLDINGS.sol*LIVE.sol;
+  mkChart('krakenPie',{type:'doughnut',data:{
+    labels:['USD Cash ($'+Math.round(HOLDINGS.usdCash).toLocaleString()+')','USDC ($'+Math.round(HOLDINGS.usdc).toLocaleString()+')','USDT ($'+Math.round(HOLDINGS.usdt).toLocaleString()+')','ETH ($'+Math.round(eu).toLocaleString()+')','SOL ($'+Math.round(su).toLocaleString()+')'],
+    datasets:[{data:[HOLDINGS.usdCash,HOLDINGS.usdc,HOLDINGS.usdt,eu,su],backgroundColor:['#15803D','#D97706','#7C3AED','#0284C7','#C2410C'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},
+    options:{responsive:true,cutout:'58%',plugins:{legend:{position:'bottom',labels:{color:TICK,padding:12}},
+      tooltip:{callbacks:{label:ctx=>' $'+ctx.raw.toLocaleString()}}}}});
+}
+
+// ══════════════════════════════════════════
+// PROJECTION CHARTS
+// ══════════════════════════════════════════
+function initProjections() {
+  // Seed monthly expenses from localStorage
+  const expInp = document.getElementById('fireExpenses');
+  if(expInp) expInp.value = getMonthlyExpenses();
+  rebuildProjectionChart();
+  rebuildInterestProjChart();
+  rebuildIndexCompareChart();
+  buildProjectionTable();
+  buildFireProjection();
+  buildUsdAppreciation();
+}
+
+function rebuildProjectionChart() {
+  const PROJ = buildProjection();
+  const nwCr = PROJ.map(r=>+(r.nw/1e7).toFixed(3));
+  const pLabels = PROJ.map(r=>r.mo.replace(' 20',"'"));
+  mkChart('nwProjectionChart',{type:'line',data:{labels:pLabels,datasets:[
+    {label:'Current (Known)',data:[nwCr[0],...Array(12).fill(null)],
+     borderColor:'#1D4ED8',backgroundColor:'rgba(29,78,216,0.12)',
+     borderWidth:3,fill:true,tension:0.4,pointRadius:7,
+     pointBackgroundColor:'#1D4ED8',pointBorderColor:'#fff',pointBorderWidth:2,order:1},
+    {label:'Projected',data:nwCr,
+     borderColor:'#1D4ED8',backgroundColor:'rgba(29,78,216,0.04)',
+     borderWidth:2,borderDash:[7,5],fill:true,tension:0.4,
+     pointRadius:4,pointBackgroundColor:'#fff',pointBorderColor:'#1D4ED8',pointBorderWidth:2,order:2},
+  ]},options:{responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:TICK}},tooltip:{callbacks:{label:ctx=>' ₹'+ctx.raw.toFixed(2)+' Cr'}}},
+    scales:{x:{ticks:{color:TICK,maxRotation:0},grid:{color:GRID},border:{display:false}},
+      y:{ticks:{color:TICK,callback:v=>'₹'+v.toFixed(1)+' Cr'},grid:{color:GRID},border:{display:false},suggestedMin:2}}}});
+}
+
+function rebuildInterestProjChart() {
+  const PROJ = buildProjection();
+  const labels = ['Apr 26','May 26',...PROJ.map(r=>r.mo.replace(' 20',"'"))];
+  const hist = [0,0,...Array(PROJ.length).fill(null)];
+  const proj = [null,null,...PROJ.map(r=>+(r.interest/1000).toFixed(1))];
+  mkChart('interestProjChart',{type:'bar',data:{labels,datasets:[
+    {label:'Historical (Actual)',data:hist,backgroundColor:'rgba(21,128,61,0.85)',borderRadius:6,borderSkipped:false},
+    {label:'Projected (Tiered 6.5%)',data:proj,backgroundColor:'rgba(21,128,61,0.3)',borderRadius:6,borderSkipped:false,borderWidth:1.5,borderColor:'rgba(21,128,61,0.6)'},
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:TICK}},
+    tooltip:{callbacks:{label:ctx=>ctx.raw?' ₹'+(ctx.raw*1000).toLocaleString('en-IN'):''}}},
+    scales:{x:{ticks:{color:TICK,maxRotation:45},grid:{display:false},border:{display:false}},
+      y:{ticks:{color:TICK,callback:v=>'₹'+v+'K'},grid:{color:GRID},border:{display:false},suggestedMin:50}}}});
+}
+
+function rebuildIndexCompareChart() {
+  const nifty = IDX.nifty || 12, sp = IDX.sp || 10;
+  const PROJ = buildProjection();
+  const labels = ['Apr 26','May 26',...PROJ.map(r=>r.mo.replace(' 20',"'"))];
+  // Cumulative return from opening balance
+  const idfcCum  = [0,0,...PROJ.map((r,i)=>PROJ.slice(0,i+1).reduce((s,x)=>s+x.interest,0))];
+  const niftyLine = labels.map((_,i)=>Math.round(COMPARE_OPENING*((Math.pow(1+nifty/100/12,i+1)-1))));
+  const spLine    = labels.map((_,i)=>Math.round(COMPARE_OPENING*((Math.pow(1+sp/100/12,i+1)-1))));
+  mkChart('nwIndexCompareChart',{type:'line',data:{labels,datasets:[
+    {label:'Bank Cumulative Interest',data:idfcCum.map(v=>+(v/1000).toFixed(1)),
+     borderColor:'#15803D',backgroundColor:'rgba(21,128,61,0.08)',fill:true,borderWidth:2.5,tension:0.4,pointRadius:3},
+    {label:'Nifty 50 ('+nifty+'% CAGR) equiv',data:niftyLine.map(v=>+(v/1000).toFixed(1)),
+     borderColor:'#D97706',backgroundColor:'transparent',borderWidth:2,borderDash:[5,3],pointRadius:0,tension:0.2},
+    {label:'S&P 500 ('+sp+'% CAGR) equiv',data:spLine.map(v=>+(v/1000).toFixed(1)),
+     borderColor:'#7C3AED',backgroundColor:'transparent',borderWidth:2,borderDash:[5,3],pointRadius:0,tension:0.2},
+  ]},options:{responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:TICK}},tooltip:{callbacks:{label:ctx=>' ₹'+(ctx.raw*1000).toLocaleString('en-IN')}}},
+    scales:{x:{ticks:{color:TICK,maxRotation:45},grid:{color:GRID},border:{display:false}},
+      y:{ticks:{color:TICK,callback:v=>'₹'+v+'K'},grid:{color:GRID},border:{display:false},suggestedMin:0}}}});
+}
+
+function buildProjectionTable() {
+  const tb = document.getElementById('projTableBody');
+  if (!tb) return;
+  tb.innerHTML = '';
+  const PROJ = buildProjection();
+  PROJ.forEach(r => {
+    const cls = r.projected?'is-projected':'highlight';
+    tb.innerHTML+=`<tr class="${cls}">
+      <td>${r.mo}${r.projected?'':' ✦'}</td>
+      <td class="num">${INR(r.bank)}</td>
+      <td class="num pos">${INR(r.interest)}</td>
+      <td class="num pos">${INR(r.staking)}</td>
+      <td class="num pos">${INR(r.salary)}</td>
+      <td class="num neg">−${INR(r.expenses)}</td>
+      <td class="num pos">+${INR(r.net)}</td>
+      <td class="num" style="font-weight:700">${INR(r.nw)}</td>
+    </tr>`;
+  });
+}
+
+// ══════════════════════════════════════════
+// DYNAMIC ACCOUNTS + ETH WALLET SYSTEM
+// ══════════════════════════════════════════
+const ACC_KEY = 'custom_accounts_v1';
+let CUSTOM_ACCS = JSON.parse(localStorage.getItem(ACC_KEY)||'null') || [];
+function saveAccounts() { localStorage.setItem(ACC_KEY,JSON.stringify(CUSTOM_ACCS)); }
+
+function walletETH() {
+  // Returns ETH-equivalent value (ETH balance + tokens converted at live ETH price)
+  return CUSTOM_ACCS.filter(a=>a.type==='wallet').reduce((s,a)=>{
+    const tokenEth = LIVE.eth>0 ? (a.tokensUSD||0)/LIVE.eth : 0;
+    return s + (a.balanceEth||0) + tokenEth;
+  },0);
+}
+function walletTotalINR(acc) {
+  return ((acc.balanceEth||0)*LIVE.eth + (acc.tokensUSD||0)) * LIVE.usdInr;
+}
+function customBankINR() {
+  return CUSTOM_ACCS.filter(a=>a.type==='bank').reduce((s,a)=>{
+    return s+(a.currency==='USD'?(a.balance||0)*LIVE.usdInr:(a.balance||0));
+  },0);
+}
+
+function isSpamToken(sym, name) {
+  const bad = /\.com|\.org|visit|claim|bonus|gift|airdrop|reward|\$|←|→|<-|bonus|claim|prize|\d{4,}USDc/i;
+  return bad.test(sym) || bad.test(name) || sym.length > 16;
+}
+
+async function fetchWalletBalances() {
+  const wallets = CUSTOM_ACCS.filter(a=>a.type==='wallet'&&a.address);
+  if(!wallets.length) return;
+  let changed = false;
+  await Promise.all(wallets.map(async acc=>{
+    try {
+      const r = await fetch(`https://api.ethplorer.io/getAddressInfo/${acc.address}?apiKey=freekey`);
+      const d = await r.json();
+      // ETH balance
+      if(d.ETH?.balance!=null){ acc.balanceEth = d.ETH.balance; changed=true; }
+      // Token balances — filter spam
+      acc.tokens = [];
+      acc.tokensUSD = 0;
+      (d.tokens||[]).forEach(t=>{
+        const info = t.tokenInfo||{};
+        const sym  = info.symbol||'';
+        const name = info.name||'';
+        if(isSpamToken(sym,name)) return;
+        const dec  = parseInt(info.decimals||18);
+        const bal  = parseFloat(t.balance||0) / Math.pow(10,dec);
+        const rate = typeof info.price==='object' ? parseFloat(info.price?.rate||0) : 0;
+        const valUSD = bal * rate;
+        if(valUSD < 0.5 && bal < 1) return; // skip dust
+        acc.tokens.push({ symbol:sym, balance:bal, valueUSD:valUSD, name });
+        acc.tokensUSD += valUSD;
+      });
+      changed = true;
+    } catch(e){}
+  }));
+  if(changed){saveAccounts();renderAccounts();updateLiveValues();}
+}
+
+function renderAccounts() {
+  const list = document.getElementById('accList');
+  if(!list) return;
+  let html = '';
+  // Fixed core accounts
+  html += accRow('P','var(--blue-dim)','var(--blue)',CONFIG.banks.primary.name,'Savings · tiered interest',INR(BANK_IDFC),'var(--green)',null);
+  html += accRow('S','var(--amber-dim)','var(--amber)',CONFIG.banks.secondary.name,'Savings',INR(BANK_KOTAK),'var(--text)',null);
+  html += accRow('KR','var(--purple-dim)','var(--purple)','Exchange','ETH · SOL · USDC · USDT · USD · Live',INR(krakenINR()),'var(--amber)',null);
+  // Custom accounts
+  CUSTOM_ACCS.forEach(acc=>{
+    let balLabel, colorStr;
+    if(acc.type==='wallet'){
+      const inrVal = walletTotalINR(acc);
+      const tokLine = acc.tokens?.length
+        ? acc.tokens.map(t=>`${t.symbol} ${t.balance.toFixed(2)}`).join(' · ')
+        : '';
+      const subLine = `${(acc.balanceEth||0).toFixed(4)} ETH`+(tokLine?' · '+tokLine:'');
+      balLabel = INR(inrVal)+'<div style="font-size:10.5px;color:var(--faint);text-align:right;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+subLine+'">'+subLine+'</div>';
+      colorStr = 'var(--teal)';
+    } else {
+      const isUSD = acc.currency==='USD';
+      balLabel = isUSD ? '$'+(acc.balance||0).toLocaleString() : INR(acc.balance||0);
+      colorStr = 'var(--text)';
+    }
+    const short = acc.short||acc.name.slice(0,2).toUpperCase();
+    html += `<div class="acc-row">
+      <div class="acc-avatar" style="background:${acc.color}22;color:${acc.color}">${short}</div>
+      <div class="acc-info"><div class="acc-name">${acc.name}</div><div class="acc-sub">${acc.note||acc.address?.slice(0,10)+'…'||acc.type}</div></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="acc-bal" style="color:${colorStr};text-align:right">${balLabel}</div>
+        <button class="btn-danger" onclick="deleteAccount('${acc.id}')" title="Remove">×</button>
+      </div>
+    </div>`;
+  });
+  // Add account form
+  html += `<div id="accFormWrap" style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:none">
+    <div class="form-grid" style="gap:8px">
+      <div class="form-group"><label class="form-label">Name</label>
+        <input type="text" id="accName" placeholder="e.g. HDFC Savings" style="padding:6px 10px;width:100%"></div>
+      <div class="form-group"><label class="form-label">Type</label>
+        <select id="accType" onchange="toggleAccTypeFields()">
+          <option value="bank">Bank</option><option value="wallet">ETH Wallet</option><option value="exchange">Exchange</option>
+        </select></div>
+      <div class="form-group" id="accBalanceGroup"><label class="form-label">Balance</label>
+        <input type="number" id="accBalance" placeholder="0" min="0" step="0.01"></div>
+      <div class="form-group"><label class="form-label">Currency</label>
+        <select id="accCurrency"><option value="INR">INR</option><option value="USD">USD</option></select></div>
+      <div class="form-group" id="accAddrGroup" style="grid-column:span 2;display:none">
+        <label class="form-label">Wallet Address (0x…)</label>
+        <input type="text" id="accAddress" placeholder="0x…" style="padding:6px 10px;width:100%"></div>
+      <div class="form-group"><label class="form-label">Color</label>
+        <select id="accColor">
+          <option value="#1D4ED8">Blue</option><option value="#15803D">Green</option>
+          <option value="#D97706">Amber</option><option value="#7C3AED">Purple</option>
+          <option value="#0F766E">Teal</option><option value="#DC2626">Red</option>
+        </select></div>
+      <div class="form-group" style="grid-column:span 2"><label class="form-label">Note</label>
+        <input type="text" id="accNote" placeholder="e.g. Acc …1234" style="padding:6px 10px;width:100%"></div>
+      <div style="grid-column:-1/1;display:flex;justify-content:flex-end;gap:8px">
+        <button class="toggle-btn btn-sm" onclick="toggleAccForm()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="addAccount()">Add</button>
+      </div>
+    </div>
+  </div>`;
+  list.innerHTML = html;
+}
+
+function accRow(short,bg,fg,name,sub,bal,balColor,id) {
+  const del = id?`<button class="btn-danger" onclick="deleteAccount('${id}')" title="Remove">×</button>`:'';
+  return `<div class="acc-row">
+    <div class="acc-avatar" style="background:${bg};color:${fg}">${short}</div>
+    <div class="acc-info"><div class="acc-name">${name}</div><div class="acc-sub">${sub}</div></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="acc-bal" style="color:${balColor}">${bal}</div>${del}
+    </div>
+  </div>`;
+}
+
+function toggleAccForm() {
+  const w = document.getElementById('accFormWrap');
+  if(w) w.style.display = w.style.display==='none'?'block':'none';
+}
+function toggleAccTypeFields() {
+  const t = document.getElementById('accType')?.value;
+  const ag = document.getElementById('accAddrGroup');
+  const bg = document.getElementById('accBalanceGroup');
+  if(ag) ag.style.display = t==='wallet'?'flex':'none';
+  if(bg) bg.style.display = t==='wallet'?'none':'flex';
+}
+function addAccount() {
+  const name    = document.getElementById('accName')?.value.trim();
+  const type    = document.getElementById('accType')?.value;
+  const balance = parseFloat(document.getElementById('accBalance')?.value)||0;
+  const currency= document.getElementById('accCurrency')?.value||'INR';
+  const address = document.getElementById('accAddress')?.value.trim();
+  const color   = document.getElementById('accColor')?.value||'#1D4ED8';
+  const note    = document.getElementById('accNote')?.value.trim();
+  if(!name){alert('Enter an account name');return;}
+  if(type==='wallet'&&!address){alert('Enter a wallet address');return;}
+  const short = name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  CUSTOM_ACCS.push({id:Date.now(),name,short,type,currency,balance,address:address||null,balanceEth:0,color,note,createdAt:Date.now()});
+  saveAccounts();
+  renderAccounts();
+  updateLiveValues();
+  if(type==='wallet'&&address) fetchWalletBalances();
+}
+function deleteAccount(id) {
+  CUSTOM_ACCS = CUSTOM_ACCS.filter(a=>a.id!=id);
+  saveAccounts();
+  renderAccounts();
+  updateLiveValues();
+}
+
+// ══════════════════════════════════════════
+// FIRC / FX TRACKER
+// ══════════════════════════════════════════
+let FIRC_ENTRIES = JSON.parse(localStorage.getItem('firc_entries')||'[]');
+function saveFirc(){localStorage.setItem('firc_entries',JSON.stringify(FIRC_ENTRIES));}
+
+function addFircEntry(){
+  const date    = document.getElementById('fircDate')?.value;
+  const amtUSD  = parseFloat(document.getElementById('fircAmtUSD')?.value)||0;
+  const rateAt  = parseFloat(document.getElementById('fircRateAt')?.value)||LIVE.usdInr;
+  const purpose = document.getElementById('fircPurpose')?.value.trim();
+  const ref     = document.getElementById('fircRef')?.value.trim();
+  const fileInp = document.getElementById('fircFile');
+  if(!amtUSD){alert('Enter amount in USD');return;}
+  const entry = {id:Date.now(),date,amtUSD,rateAt,purpose,ref,cert:null,certName:null};
+  const file  = fileInp?.files?.[0];
+  const pushAndRender = () => {
+    FIRC_ENTRIES.push(entry);
+    saveFirc();
+    ['fircAmtUSD','fircRateAt','fircPurpose','fircRef'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+    if(fileInp) fileInp.value='';
+    renderFirc();
+  };
+  if(file){
+    const reader=new FileReader();
+    reader.onload=ev=>{entry.cert=ev.target.result;entry.certName=file.name;pushAndRender();};
+    reader.readAsDataURL(file);
+  } else {
+    pushAndRender();
+  }
+}
+function deleteFircEntry(id){
+  FIRC_ENTRIES=FIRC_ENTRIES.filter(e=>e.id!==id);
+  saveFirc();renderFirc();
+}
+function attachFircCert(id,input){
+  const file=input?.files?.[0];
+  if(!file)return;
+  const entry=FIRC_ENTRIES.find(e=>e.id===id);
+  if(!entry)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{entry.cert=ev.target.result;entry.certName=file.name;saveFirc();renderFirc();};
+  reader.readAsDataURL(file);
+}
+function renderFirc(){
+  const tbody=document.getElementById('fircBody');
+  if(!tbody)return;
+  // Summary stats
+  const totalUSD = FIRC_ENTRIES.reduce((s,e)=>s+e.amtUSD,0);
+  const baseINR  = FIRC_ENTRIES.reduce((s,e)=>s+e.amtUSD*e.rateAt,0);
+  const liveINR  = totalUSD*LIVE.usdInr;
+  const fxGain   = liveINR-baseINR;
+  setText('fircTotalUSD','$'+totalUSD.toLocaleString('en-US',{maximumFractionDigits:0}));
+  setText('fircCount',FIRC_ENTRIES.length+' entr'+(FIRC_ENTRIES.length===1?'y':'ies'));
+  setText('fircBaseINR',INR(baseINR));
+  setText('fircLiveINR',INR(liveINR));
+  setText('fircRateNote','at ₹'+LIVE.usdInr.toFixed(2)+'/USD');
+  const fxEl=document.getElementById('fircFxGain');
+  if(fxEl){fxEl.textContent=(fxGain>=0?'+':'')+INR(fxGain);fxEl.style.color=fxGain>=0?'var(--green)':'var(--red)';}
+  // USD holdings appreciation panel
+  const usdHeld = HOLDINGS.usdCash+HOLDINGS.usdc+HOLDINGS.usdt;
+  const BASE_RATE = parseFloat(document.getElementById('fxBaseRateInput')?.value) || LIVE.usdInr || 84.0;
+  const usdBaseINR = usdHeld*BASE_RATE;
+  const usdLiveINR = usdHeld*LIVE.usdInr;
+  const usdGain    = usdLiveINR-usdBaseINR;
+  const usdGainPct = usdBaseINR>0?((usdLiveINR/usdBaseINR-1)*100).toFixed(2):'0.00';
+  setText('fxUsdTotal','$'+usdHeld.toLocaleString('en-US',{maximumFractionDigits:0}));
+  setText('fxBaseINR',INR(usdBaseINR));
+  setText('fxLiveINR',INR(usdLiveINR));
+  const usdGainEl=document.getElementById('fxGainVal');
+  if(usdGainEl){usdGainEl.textContent=(usdGain>=0?'+':'')+INR(usdGain);usdGainEl.style.color=usdGain>=0?'var(--green)':'var(--red)';}
+  setText('fxGainPct',(usdGain>=0?'+':'')+usdGainPct+'% vs ₹'+BASE_RATE.toFixed(2)+' base');
+  setText('fxBaseRateLbl','INR @ ₹'+BASE_RATE.toFixed(2)+' base');
+  // Table rows
+  if(FIRC_ENTRIES.length===0){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--faint);padding:36px">No entries yet. Log your first remittance above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML='';
+  [...FIRC_ENTRIES].sort((a,b)=>b.date?.localeCompare(a.date||'')||0).forEach(e=>{
+    const liveVal = e.amtUSD*LIVE.usdInr;
+    const baseVal = e.amtUSD*e.rateAt;
+    const diff    = liveVal-baseVal;
+    const diffPct = baseVal>0?((diff/baseVal)*100).toFixed(1):0;
+    const certCell = e.cert
+      ? `<a href="${e.cert}" download="${e.certName||'firc_cert'}" title="Download ${e.certName||'certificate'}" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--blue);text-decoration:none;white-space:nowrap">
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+           ${(e.certName||'cert').slice(0,18)}
+         </a>`
+      : `<label style="cursor:pointer;font-size:11px;color:var(--faint);display:inline-flex;align-items:center;gap:3px" title="Upload certificate">
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+           Upload
+           <input type="file" accept=".pdf,image/*" style="display:none" onchange="attachFircCert(${e.id},this)">
+         </label>`;
+    tbody.innerHTML+=`<tr>
+      <td style="color:var(--muted);white-space:nowrap">${e.date||'—'}</td>
+      <td>${e.purpose||'—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${e.ref||'—'}</td>
+      <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums">$${e.amtUSD.toLocaleString()}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${INR(baseVal)}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--green)">${INR(liveVal)}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;color:${diff>=0?'var(--green)':'var(--red)'}">
+        ${diff>=0?'+':''}${INR(diff)}<span style="font-size:10px;margin-left:4px">(${diff>=0?'+':''}${diffPct}%)</span>
+      </td>
+      <td>${certCell}</td>
+      <td><button class="btn-danger" onclick="deleteFircEntry(${e.id})">×</button></td>
+    </tr>`;
+  });
+}
+function initFirc(){
+  const inp=document.getElementById('fxBaseRateInput');
+  if(inp&&!inp.value&&LIVE.usdInr>50) inp.value=LIVE.usdInr.toFixed(2);
+  renderFirc();
+}
+
+// ══════════════════════════════════════════
+// FIRE PROJECTION
+// ══════════════════════════════════════════
+function buildFireProjection() {
+  const monthlyExp = parseFloat(document.getElementById('fireExpenses')?.value) || getMonthlyExpenses();
+  const swr        = parseFloat(document.getElementById('fireSWR')?.value)      || 4;
+  const annualExp  = monthlyExp * 12;
+  const fireNum    = annualExp * (100 / swr);          // 25× at 4%
+  const nw         = totalNW();
+  const pct        = Math.min(nw / fireNum * 100, 100);
+  const staking    = stakingINR();
+  const curInterest= calcIDFCInterest(BANK_IDFC);
+  // Monthly savings = salary + bank interest + staking – expenses
+  // (staking grows Kraken pile, bank savings grow bank pile)
+
+  // Simulate month-by-month until NW crosses fireNum
+  let bankSim = BANK_IDFC, krakenA = 0, months = 0;
+  const krakenBase = krakenINR();
+  const MAX_MONTHS = 600;
+  while (months < MAX_MONTHS) {
+    const curNW = bankSim + krakenBase + krakenA + BANK_KOTAK;
+    if (curNW >= fireNum) break;
+    const interest = calcIDFCInterest(bankSim);
+    bankSim  += interest + SALARY_INR - monthlyExp;
+    krakenA  += staking;
+    months++;
+  }
+
+  const fireDate = new Date();
+  fireDate.setMonth(fireDate.getMonth() + months);
+  const fireDateStr = months < MAX_MONTHS
+    ? fireDate.toLocaleDateString('en-IN',{month:'short',year:'numeric'})
+    : '>50 yrs';
+  const fireYrs = months < MAX_MONTHS ? (months/12).toFixed(1) : '50+';
+
+  setText('fireNumber',   '₹'+(fireNum/1e7).toFixed(2)+' Cr');
+  setText('fireNW',       '₹'+(nw/1e7).toFixed(2)+' Cr');
+  setText('fireProgress', pct.toFixed(1)+'%');
+  setText('fireDate',     fireDateStr);
+  setText('fireDateSub',  'in ~'+fireYrs+' years');
+  setText('firePctLabel', pct.toFixed(1)+'%');
+  const fill = document.getElementById('fireFill');
+  if (fill) fill.style.width = Math.min(pct,100).toFixed(1)+'%';
+
+  // Chart — NW trajectory vs FIRE target, show up to 10 yrs or FIRE date
+  const showMonths = Math.min(months+12, 120);
+  const labels=[], nwLine=[], fireLine=[];
+  let bSim=BANK_IDFC, kA=0;
+  for (let m=0; m<=showMonths; m++) {
+    const d=new Date(); d.setMonth(d.getMonth()+m);
+    labels.push(d.toLocaleDateString('en-IN',{month:'short',year:'2-digit'}));
+    nwLine.push(+((bSim+krakenBase+kA+BANK_KOTAK)/1e7).toFixed(3));
+    fireLine.push(+(fireNum/1e7).toFixed(3));
+    const int=calcIDFCInterest(bSim);
+    bSim+=int+SALARY_INR-monthlyExp;
+    kA+=staking;
+  }
+  mkChart('fireChart',{type:'line',data:{labels,datasets:[
+    {label:'Net Worth (projected)',data:nwLine,
+     borderColor:'#1D4ED8',backgroundColor:'rgba(29,78,216,0.1)',fill:true,
+     borderWidth:2.5,tension:0.4,pointRadius:0},
+    {label:'FIRE Target — ₹'+(fireNum/1e7).toFixed(2)+' Cr',data:fireLine,
+     borderColor:'#DC2626',backgroundColor:'transparent',
+     borderWidth:2,borderDash:[6,4],tension:0,pointRadius:0},
+  ]},options:{responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:TICK}},
+      tooltip:{callbacks:{label:ctx=>' ₹'+ctx.raw.toFixed(2)+' Cr'}}},
+    scales:{
+      x:{ticks:{color:TICK,maxTicksLimit:12,maxRotation:45},grid:{color:GRID},border:{display:false}},
+      y:{ticks:{color:TICK,callback:v=>'₹'+v.toFixed(1)+' Cr'},grid:{color:GRID},border:{display:false}},
+    }}});
+}
+
+// ══════════════════════════════════════════
+// USD APPRECIATION MODEL (FIRE section)
+// ══════════════════════════════════════════
+function buildUsdAppreciation() {
+  const usdHeld    = HOLDINGS.usdCash + HOLDINGS.usdc + HOLDINGS.usdt;
+  const deprRate   = (parseFloat(document.getElementById('fireInrDeprRate')?.value) || 3) / 100;
+  const horizon    = parseInt(document.getElementById('fireUsdHorizon')?.value) || 10;
+  const rateNow    = LIVE.usdInr || 84;
+  const inrNow     = usdHeld * rateNow;
+  const rateFuture = rateNow * Math.pow(1 + deprRate, horizon);
+  const inrFuture  = usdHeld * rateFuture;
+  const gain       = inrFuture - inrNow;
+  const gainPct    = ((gain / inrNow) * 100).toFixed(1);
+
+  setText('fireUsdHeld',  '$' + usdHeld.toLocaleString('en-US', {maximumFractionDigits:0}));
+  setText('fireUsdInrNow', INR(inrNow));
+  setText('fireUsdRateNow', 'at ₹' + rateNow.toFixed(2) + '/USD');
+  setText('fireUsdInrFuture', INR(inrFuture));
+  setText('fireUsdFutureSub', 'in ' + horizon + ' yr' + (horizon===1?'':'s') + ' @ ₹' + rateFuture.toFixed(1) + '/USD');
+  setText('fireUsdGain', '+' + INR(gain));
+  setText('fireUsdGainPct', '+' + gainPct + '% on depreciation alone');
+
+  // Chart — INR value of USD holdings year by year
+  const labels = [], inrLine = [], baseFlat = [];
+  for (let y = 0; y <= horizon; y++) {
+    labels.push('Y' + y);
+    const r = rateNow * Math.pow(1 + deprRate, y);
+    inrLine.push(+((usdHeld * r) / 1e5).toFixed(2));
+    baseFlat.push(+(inrNow / 1e5).toFixed(2));
+  }
+  mkChart('fireUsdChart', {type:'line', data:{labels, datasets:[
+    {label:'INR Value (₹L)', data:inrLine,
+     borderColor:'#15803D', backgroundColor:'rgba(21,128,61,0.1)', fill:true,
+     borderWidth:2.5, tension:0.4, pointRadius:2},
+    {label:'No depreciation baseline', data:baseFlat,
+     borderColor:'#A8A29E', backgroundColor:'transparent',
+     borderWidth:1.5, borderDash:[5,4], tension:0, pointRadius:0},
+  ]}, options:{responsive:true, interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:TICK,font:{size:11}}},
+      tooltip:{callbacks:{label:ctx=>' ₹'+(ctx.raw*100).toFixed(0)+'K'}}},
+    scales:{
+      x:{ticks:{color:TICK}, grid:{color:GRID}, border:{display:false}},
+      y:{ticks:{color:TICK, callback:v=>'₹'+v+'L'}, grid:{color:GRID}, border:{display:false}},
+    }}});
+}
+
+// ══════════════════════════════════════════
+// GOALS
+// ══════════════════════════════════════════
+let GOALS = JSON.parse(localStorage.getItem('user_goals')||'[]');
+
+function addGoal() {
+  const name    = document.getElementById('goalName')?.value.trim();
+  const target  = parseFloat(document.getElementById('goalTarget')?.value)||0;
+  const current = parseFloat(document.getElementById('goalCurrent')?.value)||0;
+  const date    = document.getElementById('goalDate')?.value||'';
+  const color   = document.getElementById('goalColor')?.value||'#1D4ED8';
+  if (!name||!target) { alert('Enter a name and target amount'); return; }
+  GOALS.push({id:Date.now(),name,target,current,date,color});
+  localStorage.setItem('user_goals',JSON.stringify(GOALS));
+  document.getElementById('goalName').value='';
+  document.getElementById('goalTarget').value='';
+  document.getElementById('goalCurrent').value='';
+  document.getElementById('goalDate').value='';
+  renderGoals();
+}
+
+function deleteGoal(id) {
+  GOALS=GOALS.filter(g=>g.id!==id);
+  localStorage.setItem('user_goals',JSON.stringify(GOALS));
+  renderGoals();
+}
+
+function updateGoalSaved(id,val) {
+  const g=GOALS.find(g=>g.id===id);
+  if(g){g.current=parseFloat(val)||0;localStorage.setItem('user_goals',JSON.stringify(GOALS));renderGoals();}
+}
+
+function renderGoals() {
+  const grid=document.getElementById('goalsGrid');
+  const empty=document.getElementById('goalsEmpty');
+  if(!grid) return;
+  if(GOALS.length===0){grid.innerHTML='';if(empty)empty.style.display='block';return;}
+  if(empty) empty.style.display='none';
+  grid.innerHTML=GOALS.map(g=>{
+    const pct  = Math.min((g.current/g.target)*100,100);
+    const rem  = Math.max(g.target-g.current,0);
+    const done = pct>=100;
+    const dStr = g.date?new Date(g.date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):null;
+    const days = g.date?Math.ceil((new Date(g.date)-new Date())/86400000):null;
+    const daysLabel = days!==null&&days>=0 ? days+' days · ':'';
+    return `<div class="goal-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div class="goal-name">${done?'✅ ':''}${g.name}</div>
+        <button class="btn-danger" onclick="deleteGoal(${g.id})">×</button>
+      </div>
+      <div class="goal-meta">
+        <span>Target: <strong>${INR(g.target)}</strong></span>
+        <span style="color:${g.color};font-weight:600">Saved: ${INR(g.current)}</span>
+        ${rem>0?'<span>Left: <strong>'+INR(rem)+'</strong></span>':''}
+        ${dStr?'<span>Due: <strong>'+daysLabel+dStr+'</strong></span>':''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="goal-track" style="flex:1"><div class="goal-fill" style="width:${pct.toFixed(1)}%;background:${g.color}"></div></div>
+        <span class="goal-pct" style="color:${g.color}">${pct.toFixed(0)}%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <label style="font-size:11px;color:var(--muted);white-space:nowrap">Update saved (₹)</label>
+        <input type="number" value="${g.current}" min="0" step="1000"
+          style="flex:1;min-width:0;padding:5px 8px;font-size:12px;border-radius:8px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-family:inherit"
+          onchange="updateGoalSaved(${g.id},this.value)">
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function initGoals() { renderGoals(); }
+
+// ══════════════════════════════════════════
+// TAXES — 44AD Presumptive Taxation
+// ══════════════════════════════════════════
+let TAX_REGIME = localStorage.getItem('tax_regime')||CONFIG.tax.defaultRegime; // 'new' | 'old'
+let CGT_ENTRIES = JSON.parse(localStorage.getItem('cgt_entries')||'[]');
+
+// Advance tax paid data — persisted per quarter
+let ADV_TAX = JSON.parse(localStorage.getItem('adv_tax_v1')||'null') || {
+  q1:{paid:0,cert:null,certName:null},
+  q2:{paid:0,cert:null,certName:null},
+  q3:{paid:0,cert:null,certName:null},
+  q4:{paid:0,cert:null,certName:null},
+};
+function saveAdvTax(){localStorage.setItem('adv_tax_v1',JSON.stringify(ADV_TAX));}
+
+// FY 2026-27 new regime slabs (Budget 2025)
+const NEW_SLABS = [
+  [400000, 0],
+  [800000, 0.05],
+  [1200000, 0.10],
+  [1600000, 0.15],
+  [2000000, 0.20],
+  [2400000, 0.25],
+  [Infinity, 0.30],
+];
+// Old regime slabs
+const OLD_SLABS = [
+  [250000, 0],
+  [500000, 0.05],
+  [1000000, 0.20],
+  [Infinity, 0.30],
+];
+
+function calcSlabTax(income, slabs) {
+  let tax = 0, prev = 0;
+  for (const [limit, rate] of slabs) {
+    if (income <= prev) break;
+    const taxable = Math.min(income, limit) - prev;
+    tax += taxable * rate;
+    prev = limit;
+    if (limit === Infinity) break;
+  }
+  return tax;
+}
+
+// Pull sum of Paid invoices (USD → INR at live rate) into gross receipts field
+function pullReceiptsFromInvoices() {
+  const INVOICES = JSON.parse(localStorage.getItem('invoices_v1')||'[]');
+  const paidUSD = INVOICES.filter(i=>i.status==='Paid').reduce((s,i)=>s+i.amtUSD,0);
+  const paidINR = Math.round(paidUSD * LIVE.usdInr);
+  const inp = document.getElementById('taxGrossInp');
+  if(inp){ inp.value = paidINR; }
+  const note = document.getElementById('taxReceiptNote');
+  if(note) note.textContent = `${INVOICES.filter(i=>i.status==='Paid').length} paid invoice(s) · $${paidUSD.toLocaleString()} × ₹${LIVE.usdInr.toFixed(2)} = ${INR(paidINR)}`;
+  computeTax();
+}
+
+function computeTax() {
+  const grossReceipts = parseFloat(document.getElementById('taxGrossInp')?.value)||0;
+  const interest      = parseFloat(document.getElementById('taxInterest')?.value)||0;
+  const other         = parseFloat(document.getElementById('taxOther')?.value)||0;
+
+  // 44AD: user-controlled profit rate (default 6% for digital receipts)
+  const profitRate = (parseFloat(document.getElementById('taxProfitRate')?.value) || (CONFIG.tax.presumptiveProfitRate * 100)) / 100;
+  const presumptiveProfit = Math.round(grossReceipts * profitRate);
+
+  // Total income before deductions
+  const totalIncome = presumptiveProfit + interest + other;
+
+  // Deductions (old regime only)
+  let totalDeductions = 0;
+  if (TAX_REGIME === 'old') {
+    const d80C      = Math.min(parseFloat(document.getElementById('tax80C')?.value)||0, 150000);
+    const d80D      = Math.min(parseFloat(document.getElementById('tax80D')?.value)||0, 50000);
+    const dNPS      = Math.min(parseFloat(document.getElementById('taxNPS')?.value)||0, 50000);
+    const dOther    = parseFloat(document.getElementById('taxOtherDed')?.value)||0;
+    totalDeductions = d80C + d80D + dNPS + dOther;
+  }
+
+  const netTaxable = Math.max(totalIncome - totalDeductions, 0);
+  const slabs = TAX_REGIME === 'new' ? NEW_SLABS : OLD_SLABS;
+  let slabTax = calcSlabTax(netTaxable, slabs);
+
+  // 87A rebate — new regime: full rebate if tax ≤ ₹60,000
+  if (TAX_REGIME === 'new' && slabTax <= 60000) slabTax = 0;
+  // Old regime: rebate if tax ≤ ₹12,500 and net income ≤ ₹5L
+  if (TAX_REGIME === 'old' && netTaxable <= 500000 && slabTax <= 12500) slabTax = 0;
+
+  const cess      = Math.round(slabTax * 0.04);
+  const totalSlab = Math.round(slabTax + cess);
+
+  // Crypto CGT
+  const cgtGains = CGT_ENTRIES.reduce((s,e)=>s+Math.max(e.proceeds-e.cost,0),0);
+  const tdsTotal = CGT_ENTRIES.reduce((s,e)=>s+(e.tds||0),0);
+  const cgtTax   = Math.round(cgtGains * 0.30 * 1.04);
+
+  // Advance tax paid
+  const advPaid = Object.values(ADV_TAX).reduce((s,q)=>s+(q.paid||0),0);
+
+  const grandTotal = totalSlab + cgtTax;
+  const netPayable = Math.max(grandTotal - advPaid - tdsTotal, 0);
+
+  // Stat boxes
+  setText('taxTotal',          INR(netPayable));
+  setText('taxRegimeLabel',    (TAX_REGIME==='new'?'New':'Old')+' Regime · 44AD');
+  setText('taxProfitSub',      (profitRate*100).toFixed(1)+'% of gross receipts');
+  setText('taxGrossReceipts',  INR(grossReceipts));
+  setText('taxReceiptsSub',    grossReceipts>0?'business receipts':'enter receipts above');
+  setText('taxProfit',         INR(presumptiveProfit));
+  setText('taxAdvPaid',        INR(advPaid));
+  setText('taxAdvSub',         advPaid>0?`${Object.values(ADV_TAX).filter(q=>q.paid>0).length} quarter(s) paid`:'no advance tax logged');
+
+  // Show/hide deductions section
+  const dedWrap = document.getElementById('taxDeductionsWrap');
+  if(dedWrap) dedWrap.style.display = TAX_REGIME==='old' ? 'block' : 'none';
+
+  // Breakdown table
+  const bd = document.getElementById('taxBreakdown');
+  if(bd) {
+    const rows = [
+      ['Gross Professional Receipts', grossReceipts, ''],
+      ['Presumptive Profit @ '+(profitRate*100).toFixed(1)+'% (44AD)', presumptiveProfit, ''],
+      ['Bank Interest Income', interest, ''],
+      ['Other Income', other, ''],
+      ['Total Income', totalIncome, 'font-weight:700'],
+      ...(TAX_REGIME==='old' && totalDeductions>0 ? [['Less: Deductions (80C/80D/NPS)', -totalDeductions, 'color:var(--green)']] : []),
+      ['Net Taxable Income', netTaxable, 'font-weight:700;border-top:1px solid var(--border)'],
+      ['Income Tax (Slab)', slabTax, 'color:var(--red)'],
+      ['Health & Ed. Cess (4%)', cess, 'color:var(--red)'],
+      ['Total Income Tax', totalSlab, 'font-weight:700;color:var(--red)'],
+      ['Crypto CGT (30% + cess)', cgtTax, 'color:var(--amber)'],
+      ['Gross Tax Liability', grandTotal, 'font-weight:700'],
+      ['Less: Advance Tax Paid', -advPaid, 'color:var(--green)'],
+      ['Less: TDS Credited', -tdsTotal, 'color:var(--green)'],
+      ['Net Tax Payable', netPayable, 'font-weight:800;font-size:15px;color:var(--red);border-top:1px solid var(--border)'],
+    ];
+    bd.innerHTML = '<table style="width:100%;font-size:12.5px">'
+      + rows.map(([l,v,s])=>`<tr>
+          <td style="padding:5px 2px;color:var(--muted);${s.includes('border')?'padding-top:10px':''}">${l}</td>
+          <td style="text-align:right;padding:5px 2px;font-variant-numeric:tabular-nums;${s}">${v<0?'−'+INR(-v):INR(v)}</td>
+        </tr>`).join('')
+      + '</table>';
+  }
+
+  // Advance tax schedule
+  renderAdvanceTax(grandTotal);
+}
+
+function renderAdvanceTax(grandTotal) {
+  const adv = document.getElementById('advTaxTable');
+  if(!adv) return;
+  const quarters = ['q1','q2','q3','q4'];
+  const pcts     = [0.15, 0.45, 0.75, 1.00];
+  const labels   = ['Q1 — Jun 15, 2026','Q2 — Sep 15, 2026','Q3 — Dec 15, 2026','Q4 — Mar 15, 2027'];
+  const deadlines= ['2026-06-15','2026-09-15','2026-12-15','2027-03-15'];
+  const today    = new Date();
+
+  let html = `<table style="width:100%;font-size:12px;border-collapse:separate;border-spacing:0">
+    <thead><tr>
+      <th style="padding:6px 4px;color:var(--faint);font-size:10px;text-transform:uppercase;letter-spacing:.8px;text-align:left">Deadline</th>
+      <th style="padding:6px 4px;color:var(--faint);font-size:10px;text-transform:uppercase;letter-spacing:.8px;text-align:right">Due</th>
+      <th style="padding:6px 4px;color:var(--faint);font-size:10px;text-transform:uppercase;letter-spacing:.8px;text-align:right">Paid (₹)</th>
+      <th style="padding:6px 4px;color:var(--faint);font-size:10px;text-transform:uppercase;letter-spacing:.8px">Receipt</th>
+    </tr></thead><tbody>`;
+
+  let cumPaid = 0;
+  quarters.forEach((q, i) => {
+    const due    = Math.round(grandTotal * pcts[i]);
+    const isPast = new Date(deadlines[i]) < today;
+    const isNext = !isPast && (i===0 || new Date(deadlines[i-1]) < today);
+    const paid   = ADV_TAX[q].paid || 0;
+    cumPaid     += paid;
+    const rowBg  = isNext ? 'background:rgba(220,38,38,0.04)' : '';
+    const badge  = isNext
+      ? '<span style="font-size:10px;background:var(--red-dim);color:var(--red);padding:1px 7px;border-radius:6px;margin-left:6px">NEXT</span>'
+      : isPast ? '<span style="font-size:10px;background:var(--green-dim);color:var(--green);padding:1px 7px;border-radius:6px;margin-left:6px">Done</span>' : '';
+    const paidColor = paid >= due ? 'var(--green)' : paid > 0 ? 'var(--amber)' : 'var(--faint)';
+    const certCell = ADV_TAX[q].cert
+      ? `<a href="${ADV_TAX[q].cert}" download="${ADV_TAX[q].certName||'tax_receipt'}" style="font-size:11px;color:var(--blue);text-decoration:none;display:inline-flex;align-items:center;gap:3px">
+           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+           ${(ADV_TAX[q].certName||'receipt').slice(0,14)}
+         </a>`
+      : `<label style="cursor:pointer;font-size:11px;color:var(--faint);display:inline-flex;align-items:center;gap:3px">
+           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+           Upload
+           <input type="file" accept=".pdf,image/*" style="display:none" onchange="attachAdvTaxReceipt('${q}',this)">
+         </label>`;
+    html += `<tr style="${rowBg}">
+      <td style="padding:8px 4px;${isNext?'font-weight:700':''}">${labels[i]}${badge}</td>
+      <td style="text-align:right;padding:8px 4px;font-variant-numeric:tabular-nums;color:var(--muted)">${INR(due)}</td>
+      <td style="text-align:right;padding:8px 4px">
+        <input type="number" value="${paid||''}" placeholder="0" min="0" step="100"
+          style="width:100px;padding:4px 8px;font-size:12px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:${paidColor};font-family:inherit;text-align:right"
+          oninput="updateAdvPaid('${q}',this.value)">
+      </td>
+      <td style="padding:8px 4px">${certCell}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table>`;
+  adv.innerHTML = html;
+}
+
+function updateAdvPaid(q, val) {
+  ADV_TAX[q].paid = parseFloat(val)||0;
+  saveAdvTax();
+  computeTax();
+}
+
+function attachAdvTaxReceipt(q, input) {
+  const file = input?.files?.[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    ADV_TAX[q].cert = ev.target.result;
+    ADV_TAX[q].certName = file.name;
+    saveAdvTax();
+    computeTax();
+  };
+  reader.readAsDataURL(file);
+}
+
+function toggleRegime() {
+  TAX_REGIME = TAX_REGIME==='new' ? 'old' : 'new';
+  localStorage.setItem('tax_regime', TAX_REGIME);
+  const btn = document.getElementById('regimeBtn');
+  if(btn) btn.textContent = TAX_REGIME==='new' ? 'Switch to Old Regime' : 'Switch to New Regime';
+  computeTax();
+}
+
+function addCgtEntry() {
+  const asset    = document.getElementById('cgtAsset')?.value;
+  const date     = document.getElementById('cgtDate')?.value;
+  const qty      = parseFloat(document.getElementById('cgtQty')?.value)||0;
+  const cost     = parseFloat(document.getElementById('cgtCost')?.value)||0;
+  const proceeds = parseFloat(document.getElementById('cgtProceeds')?.value)||0;
+  const tds      = parseFloat(document.getElementById('cgtTDS')?.value)||0;
+  if(!proceeds){alert('Enter sale proceeds');return;}
+  CGT_ENTRIES.push({id:Date.now(),asset,date,qty,cost,proceeds,tds});
+  localStorage.setItem('cgt_entries',JSON.stringify(CGT_ENTRIES));
+  ['cgtQty','cgtCost','cgtProceeds','cgtTDS'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+  renderCgt();
+  computeTax();
+}
+function deleteCgtEntry(id) {
+  CGT_ENTRIES=CGT_ENTRIES.filter(e=>e.id!==id);
+  localStorage.setItem('cgt_entries',JSON.stringify(CGT_ENTRIES));
+  renderCgt();computeTax();
+}
+function renderCgt() {
+  const tbody=document.getElementById('cgtBody');
+  if(!tbody)return;
+  if(!CGT_ENTRIES.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--faint);padding:28px">No crypto sales logged yet.</td></tr>';
+    return;
+  }
+  let totProceeds=0,totCost=0,totGain=0,totTax=0,totTds=0;
+  tbody.innerHTML='';
+  CGT_ENTRIES.forEach(e=>{
+    const gain=e.proceeds-e.cost;
+    const tax=Math.round(Math.max(gain,0)*0.30*1.04);
+    totProceeds+=e.proceeds;totCost+=e.cost;totGain+=gain;totTax+=tax;totTds+=e.tds||0;
+    tbody.innerHTML+=`<tr>
+      <td style="color:var(--muted)">${e.date||'—'}</td>
+      <td><strong>${e.asset}</strong></td>
+      <td style="color:var(--muted)">${e.qty||'—'}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${INR(e.proceeds)}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${INR(e.cost)}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;color:${gain>=0?'var(--green)':'var(--red)'}">
+        ${gain>=0?'+':'−'}${INR(Math.abs(gain))}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--red)">${INR(tax)}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--green)">${INR(e.tds||0)}</td>
+      <td><button class="btn-danger" onclick="deleteCgtEntry(${e.id})">×</button></td>
+    </tr>`;
+  });
+  tbody.innerHTML+=`<tr style="background:var(--s2);font-weight:700">
+    <td colspan="3">Total</td>
+    <td style="text-align:right">${INR(totProceeds)}</td>
+    <td style="text-align:right">${INR(totCost)}</td>
+    <td style="text-align:right;color:${totGain>=0?'var(--green)':'var(--red)'}">${totGain>=0?'+':'−'}${INR(Math.abs(totGain))}</td>
+    <td style="text-align:right;color:var(--red)">${INR(totTax)}</td>
+    <td style="text-align:right;color:var(--green)">${INR(totTds)}</td>
+    <td></td>
+  </tr>`;
+}
+function initTaxes(){
+  const btn = document.getElementById('regimeBtn');
+  if(btn) btn.textContent = TAX_REGIME==='new' ? 'Switch to Old Regime' : 'Switch to New Regime';
+  pullReceiptsFromInvoices();
+  computeTax();
+  renderCgt();
+}
+
+// ══════════════════════════════════════════
+// INVOICES
+// ══════════════════════════════════════════
+let INVOICES = JSON.parse(localStorage.getItem('invoices_v1')||'[]');
+function saveInvoices(){localStorage.setItem('invoices_v1',JSON.stringify(INVOICES));}
+
+function addInvoice() {
+  const num    = document.getElementById('invNum')?.value.trim();
+  const client = document.getElementById('invClient')?.value.trim();
+  const date   = document.getElementById('invDate')?.value;
+  const due    = document.getElementById('invDue')?.value;
+  const amtUSD = parseFloat(document.getElementById('invAmtUSD')?.value)||0;
+  const status = document.getElementById('invStatus')?.value||'Draft';
+  const desc   = document.getElementById('invDesc')?.value.trim();
+  if(!client||!amtUSD){alert('Enter client and amount');return;}
+  const autoNum = num || 'INV-'+(new Date().getFullYear())+'-'+String(INVOICES.length+1).padStart(3,'0');
+  INVOICES.push({id:Date.now(),num:autoNum,client,date,due,amtUSD,status,desc,createdAt:Date.now()});
+  saveInvoices();
+  ['invNum','invClient','invDate','invDue','invAmtUSD','invDesc'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
+  renderInvoices();
+}
+function deleteInvoice(id){
+  INVOICES=INVOICES.filter(i=>i.id!==id);saveInvoices();renderInvoices();
+}
+function updateInvoiceStatus(id,status){
+  const inv=INVOICES.find(i=>i.id===id);
+  if(inv){inv.status=status;saveInvoices();renderInvoices();}
+}
+function renderInvoices(){
+  const tbody=document.getElementById('invBody');
+  if(!tbody)return;
+  const total=INVOICES.reduce((s,i)=>s+i.amtUSD,0);
+  const paid=INVOICES.filter(i=>i.status==='Paid').reduce((s,i)=>s+i.amtUSD,0);
+  const outstanding=INVOICES.filter(i=>['Sent','Draft'].includes(i.status)).reduce((s,i)=>s+i.amtUSD,0);
+  const today=new Date();
+  const overdue=INVOICES.filter(i=>i.status==='Sent'&&i.due&&new Date(i.due)<today).length;
+  setText('invTotalUSD','$'+total.toLocaleString('en-US',{maximumFractionDigits:0}));
+  setText('invCount',INVOICES.length+' invoice'+(INVOICES.length!==1?'s':''));
+  setText('invPaid','$'+paid.toLocaleString('en-US',{maximumFractionDigits:0}));
+  setText('invPaidCount',INVOICES.filter(i=>i.status==='Paid').length+' paid');
+  setText('invOutstanding','$'+outstanding.toLocaleString('en-US',{maximumFractionDigits:0}));
+  setText('invOverdue',overdue+' overdue');
+  setText('invTotalINR',INR(total*LIVE.usdInr));
+  if(!INVOICES.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--faint);padding:36px">No invoices yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML='';
+  [...INVOICES].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(inv=>{
+    const isOverdue=inv.status==='Sent'&&inv.due&&new Date(inv.due)<today;
+    const stColors={Draft:'var(--faint)',Sent:'var(--blue)',Paid:'var(--green)',Overdue:'var(--red)'};
+    const stBgs={Draft:'var(--s2)',Sent:'var(--blue-dim)',Paid:'var(--green-dim)',Overdue:'var(--red-dim)'};
+    const disp=isOverdue?'Overdue':inv.status;
+    tbody.innerHTML+=`<tr ${isOverdue?'class="flagged"':''}>
+      <td><strong>${inv.num}</strong></td>
+      <td>${inv.client}</td>
+      <td style="color:var(--muted);white-space:nowrap">${inv.date||'—'}</td>
+      <td style="color:var(--muted);white-space:nowrap${isOverdue?';color:var(--red)':''}">${inv.due||'—'}</td>
+      <td style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums">$${inv.amtUSD.toLocaleString()}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)">${INR(inv.amtUSD*LIVE.usdInr)}</td>
+      <td style="color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${inv.desc||''}">${inv.desc||'—'}</td>
+      <td><select class="tag" style="background:${stBgs[disp]};color:${stColors[disp]};border:none;cursor:pointer;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;font-family:inherit"
+        onchange="updateInvoiceStatus(${inv.id},this.value)">
+        ${['Draft','Sent','Paid','Overdue'].map(s=>`<option ${s===inv.status?'selected':''}>${s}</option>`).join('')}
+      </select></td>
+      <td><button class="btn-danger" onclick="deleteInvoice(${inv.id})">×</button></td>
+    </tr>`;
+  });
+}
+function initInvoices(){renderInvoices();}
+
+// ══════════════════════════════════════════
+// PAGE SWITCHER
+// ══════════════════════════════════════════
+const PAGE_TITLES = {overview:'Overview',cashflow:'Cash Flow',portfolio:'Portfolio',projections:'Projections',inflight:'Inflight',transactions:'Transactions',goals:'Goals',firc:'FIRC / FX Tracker',taxes:'Taxes — FY 2026-27',invoices:'Invoices'};
+const PAGE_INIT   = {overview:initOverview,cashflow:initCashFlow,portfolio:initPortfolio,projections:initProjections,goals:initGoals,firc:initFirc,taxes:initTaxes,invoices:initInvoices};
+
+function switchPage(id, el) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('pageTitle').textContent = PAGE_TITLES[id];
+  window.scrollTo({top:0,behavior:'smooth'});
+  if (PAGE_INIT[id]) PAGE_INIT[id]();
+  setTimeout(()=>Object.values(CR).forEach(c=>{try{c.resize()}catch(e){}}),80);
+  if (id==='transactions') filterTxns();
+  if (id==='inflight')     renderInflight();
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function togglePrivacy() {
+  const on = document.body.classList.toggle('privacy');
+  document.getElementById('eyeLabel').textContent = on ? 'Show' : 'Hide';
+  document.getElementById('eyeIcon').innerHTML = on
+    ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+    : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+}
+
+filterTxns();
+initOverview();
+fetchLiveRates();   // kick off live API, will call updateLiveValues() on complete
+</script>
+</body>
+</html>

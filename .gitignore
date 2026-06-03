@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# LibreOffice / OpenOffice lock files
+.~lock.*
+
+# User-local config override (optional pattern for users who fork)
+*.local.html
+
+# Node / build tooling (not used today, just in case)
+node_modules/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Editor folders
+.vscode/
+.idea/
