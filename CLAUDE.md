@@ -36,7 +36,7 @@ Eleven tabs, each a `<div class="page" id="page-{id}">`. Switching calls
    are init'd only on first visit, tracked via the `initializedPages`
    Set — currently just the Markets tab, whose iframes are too heavy
    to re-mount on every click.
-3. Updates `document.title` and `.page-title` via `PAGE_TITLES`.
+3. Updates the page heading (`#pageTitle` element) via `PAGE_TITLES`.
 
 ### Chart registry
 
