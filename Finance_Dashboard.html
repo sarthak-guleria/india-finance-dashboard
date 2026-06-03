@@ -3201,6 +3201,16 @@ function tvRemoveTicker(listKey, index) {
   if (listKey === 'watchlistGrid') tvRenderGrid();
 }
 
+function tvResetDefaults() {
+  tvState = JSON.parse(JSON.stringify(CONFIG.tradingview));  // deep copy
+  saveTVState();
+  tvRenderChips();
+  tvMountTickerTape();
+  tvRenderGrid();
+  tvMountMainChart();  // re-mount so its initial symbol resets
+  // Economic calendar untouched — does not depend on tvState.
+}
+
 function tvRenderGrid() {
   const host = document.getElementById('tvMiniGrid');
   if (!host) return;
