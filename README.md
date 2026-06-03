@@ -18,6 +18,7 @@ no server, no account. Open the HTML file in any modern browser.
 - **FIRC** — Log foreign-remittance certificates (with file attachments).
 - **Taxes** — India FY 2026-27 slabs, 44AD presumptive, advance tax, CGT.
 - **Invoices** — Issue and track invoices; gross receipts feed into tax.
+- **Settings** — Edit your real numbers (bank balances, salary, holdings, bank interest schedule, etc.). Saves to your browser. Includes a Reset-everything button.
 - **Markets** — Embedded TradingView widgets (ticker tape, advanced chart, mini-chart grid, economic calendar). Watchlist editable in-app.
 
 ## Quickstart
@@ -28,9 +29,11 @@ no server, no account. Open the HTML file in any modern browser.
    cd finance-dashboard
    ```
 
-2. **Edit the `CONFIG` block** at the top of the `<script>` tag in
-   `Finance_Dashboard.html`. Set your bank balances, salary, holdings,
-   and (optionally) your bank's interest tiers.
+2. **Open the file in a browser and enter your numbers via the
+   Settings tab** (bank balances, salary, holdings, bank interest
+   schedule, index assumptions). Saves automatically to your browser.
+   Alternatively, you can pre-fill defaults by editing the `CONFIG`
+   block at the top of the `<script>` tag in `Finance_Dashboard.html`.
 
 3. **Open the file in a browser**
    ```
@@ -45,7 +48,7 @@ invoices, goals, FIRC entries, advance tax, custom accounts/wallets.
 ## Architecture (short)
 
 - Single HTML file with inline CSS and JS. No build, no framework.
-- 11 tabs, each a `<div class="page">`. Switching is handled by `switchPage(id)`.
+- 12 tabs, each a `<div class="page">`. Switching is handled by `switchPage(id)`.
 - All Chart.js instances live in a `CR = {}` registry, recreated via `mkChart`.
 - Live rates fetched on load and every 5 minutes from multiple
   CORS-friendly endpoints (jsdelivr currency-api, Frankfurter, Binance,
@@ -87,9 +90,11 @@ attachments can push you over.
 
 ## Known limitations
 
-- `TRANSACTIONS` is a hardcoded array. To bring in your real transactions,
-  edit the array directly or extend the dashboard with a CSV importer
-  (PRs welcome).
+- The sample `TRANSACTIONS` array is empty by default. To bring in your
+  real transactions, add them via the Transactions tab "Add Transaction"
+  UI (stored in `localStorage['manual_entries']`), edit the
+  `TRANSACTIONS` array directly, or extend the dashboard with a CSV
+  importer (PRs welcome).
 - localStorage 5MB cap can be hit if you attach many large file
   certificates.
 - Tax engine is India-only.

@@ -27,7 +27,7 @@ into separate files unless explicitly asked.
 
 ### Page system
 
-Eleven tabs, each a `<div class="page" id="page-{id}">`. Switching calls
+Twelve tabs, each a `<div class="page" id="page-{id}">`. Switching calls
 `switchPage(id)` which:
 
 1. Hides all `.page` divs, shows the target.
@@ -43,6 +43,38 @@ Eleven tabs, each a `<div class="page" id="page-{id}">`. Switching calls
 All Chart.js instances are stored in `CR = {}`. Always use
 `mkChart(id, cfg)` — it destroys the old instance before creating the new
 one, preventing canvas-reuse errors.
+
+### Settings tab
+
+The user's single in-app surface for editing every value previously
+hardcoded in `CONFIG` (plus the `IDX` index-return assumptions).
+Persists to `localStorage['user_settings_v1']`. On page load, an IIFE
+declared immediately after `CONFIG` (and the moved-up `IDX`) deep-merges
+the saved settings into both objects BEFORE any aliases (`HOLDINGS`,
+`BANK_IDFC`, etc.) derive their values — so all downstream code reads
+post-merge values without modification. After Save, the user is asked
+to reload; live in-place mutation of every chart/KPI was avoided in
+favor of reload-once simplicity.
+
+The form covers: identity, the two primary/secondary banks, monthly
+salary, exchange-side crypto holdings, monthly staking. An Advanced
+section (collapsed by default) covers the index comparison baseline,
+Nifty/S&P assumed returns, the full bank-interest schedule (slab caps +
+rates), and the tax presumptive profit rate.
+
+Decimal storage vs. percent display: `bankInterest.tier*.rate` and
+`tax.presumptiveProfitRate` are stored as decimals (0.025); the form
+shows percentages and converts at the read/write boundary.
+
+`initSettings` is intentionally NOT in `PAGE_INIT_ONCE` — it re-runs on
+every tab visit so inputs always reflect current effective values.
+
+### Reset everything
+
+The Settings tab's "Reset everything" button clears every known
+`localStorage` key (see the table below — all of them, plus
+`user_settings_v1` and `tv_state_v1`) and reloads. Returns the dashboard
+to its ship-empty default state.
 
 ### Markets tab (TradingView widgets)
 
@@ -124,6 +156,7 @@ tiered savings rate can be expressed by editing CONFIG.
 | `adv_tax_v1` | Advance tax paid per quarter + base64 receipts. |
 | `invoices_v1` | Invoice records. |
 | `tv_state_v1` | Markets tab state (ticker tape + watchlist grid + initial main-chart symbol). |
+| `user_settings_v1` | Settings-tab overrides for every overrideable CONFIG value plus IDX. Deep-merged into CONFIG/IDX at page load. |
 
 Base64 storage of attachments shares the ~5MB localStorage cap.
 
