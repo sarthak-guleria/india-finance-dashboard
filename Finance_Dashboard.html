@@ -314,6 +314,38 @@ body:not(.privacy) .holding-inr { transition: filter 0.25s ease; }
 /* TXN GROUP HEADER */
 .txn-group-row td{background:var(--s2)!important;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;padding:6px 14px}
 .txn-group-total{float:right;font-weight:700;color:var(--text)}
+
+/* MARKETS TAB */
+.tv-section{margin-bottom:18px}
+.tv-section-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
+.tv-manager{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:18px;box-shadow:var(--shadow-sm)}
+.tv-manager-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.tv-manager-title{font-size:13px;font-weight:600;color:var(--text)}
+.tv-manager-body{margin-top:14px;display:none}
+.tv-manager.open .tv-manager-body{display:block}
+.tv-manager.open .tv-manager-caret{transform:rotate(90deg)}
+.tv-manager-caret{transition:transform 0.15s;color:var(--muted)}
+.tv-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.tv-input{flex:1;min-width:180px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text)}
+.tv-btn{padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:12.5px;font-weight:500;cursor:pointer;transition:background 0.1s}
+.tv-btn:hover{background:var(--s2)}
+.tv-btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tv-btn-primary:hover{background:#1E40AF}
+.tv-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.tv-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--s2);border-radius:14px;font-size:12px;color:var(--text)}
+.tv-chip-x{cursor:pointer;color:var(--muted);font-weight:700;line-height:1}
+.tv-chip-x:hover{color:var(--red)}
+.tv-hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+.tv-hint a{color:var(--blue);text-decoration:none}
+.tv-hint a:hover{text-decoration:underline}
+.tv-widget-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:0;margin-bottom:18px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.tv-ticker-tape{height:46px}
+.tv-main-chart{height:560px}
+.tv-mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}
+@media (min-width:900px){.tv-mini-grid{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:1300px){.tv-mini-grid{grid-template-columns:repeat(4,1fr)}}
+.tv-mini-tile{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;height:220px;box-shadow:var(--shadow-sm)}
+.tv-calendar{height:520px}
 </style>
 </head>
 <body>
@@ -1186,7 +1218,54 @@ body:not(.privacy) .holding-inr { transition: filter 0.25s ease; }
   </div>
 
   <div class="page" id="page-tradingview">
-    <!-- Symbol manager, ticker tape, advanced chart, mini-chart grid, and economic calendar are added in later tasks. -->
+
+    <!-- Symbol manager (collapsed by default) -->
+    <div class="tv-manager" id="tvManager">
+      <div class="tv-manager-head" onclick="document.getElementById('tvManager').classList.toggle('open')">
+        <div class="tv-manager-title">Edit watchlist</div>
+        <svg class="tv-manager-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="tv-manager-body">
+
+        <div class="tv-section">
+          <div class="tv-section-label">Ticker tape (scrolling banner)</div>
+          <div class="tv-chips" id="tvChipsTape"></div>
+          <div class="tv-row">
+            <input type="text" class="tv-input" id="tvInputTape" placeholder="BINANCE:BTCUSDT or NSE:RELIANCE">
+            <button class="tv-btn tv-btn-primary" onclick="tvAddTicker('tickerTape')">Add</button>
+          </div>
+        </div>
+
+        <div class="tv-section">
+          <div class="tv-section-label">Watchlist grid (mini-charts)</div>
+          <div class="tv-chips" id="tvChipsGrid"></div>
+          <div class="tv-row">
+            <input type="text" class="tv-input" id="tvInputGrid" placeholder="BINANCE:BTCUSDT or NSE:RELIANCE">
+            <button class="tv-btn tv-btn-primary" onclick="tvAddTicker('watchlistGrid')">Add</button>
+          </div>
+        </div>
+
+        <div class="tv-row" style="justify-content:flex-end;margin-bottom:0">
+          <button class="tv-btn" onclick="tvResetDefaults()">Reset to defaults</button>
+        </div>
+
+        <div class="tv-hint">Use TradingView's <code>EXCHANGE:SYMBOL</code> format. Find symbols at <a href="https://www.tradingview.com/symbols/" target="_blank" rel="noopener">tradingview.com/symbols</a>.</div>
+
+      </div>
+    </div>
+
+    <!-- Ticker tape -->
+    <div class="tv-widget-card tv-ticker-tape" id="tvTickerTape"></div>
+
+    <!-- Main advanced chart -->
+    <div class="tv-widget-card tv-main-chart" id="tvMainChart"></div>
+
+    <!-- Mini-chart grid: tiles injected in tvRenderGrid() -->
+    <div class="tv-mini-grid" id="tvMiniGrid"></div>
+
+    <!-- Economic calendar -->
+    <div class="tv-widget-card tv-calendar" id="tvCalendar"></div>
+
   </div>
 
 </main>
