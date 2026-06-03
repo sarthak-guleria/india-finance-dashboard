@@ -1277,35 +1277,35 @@ const CONFIG = {
   // --- Identity (optional, shown in page header) ---
   ownerName: "Your Name",
 
-  // --- Bank balances (₹, snapshot) ---
+  // --- Bank balances (₹, snapshot). Edit in the Settings tab. ---
   banks: {
-    primary:   { name: "Primary Bank",   balance: 500000  },
-    secondary: { name: "Secondary Bank", balance: 0       },
+    primary:   { name: "Primary Bank",   balance: 0 },
+    secondary: { name: "Secondary Bank", balance: 0 },
   },
 
-  // --- Salary & expenses ---
-  monthlyNetSalary: 80000,
-  defaultMonthlyExpenses: 30000,   // user can override in UI; persists to localStorage
+  // --- Salary & expenses. Edit salary in Settings; expenses on Projections. ---
+  monthlyNetSalary: 0,
+  defaultMonthlyExpenses: 0,   // user enters real value via Projections inline editor
 
-  // --- Crypto holdings (Kraken-style spot; works with any exchange that supports these tokens) ---
+  // --- Crypto holdings (exchange-side defaults). Edit in the Settings tab. ---
   holdings: {
-    eth:    0.5,
-    sol:    2,
-    usdCash:1000,
-    usdc:   5000,
+    eth:    0,
+    sol:    0,
+    usdCash:0,
+    usdc:   0,
     usdt:   0,
   },
-  monthlyStakingUSD: 25,
+  monthlyStakingUSD: 0,
 
-  // --- IDFC-style tiered interest (edit if your bank uses different tiers) ---
+  // --- IDFC-style tiered interest. Edit in the Settings tab (Advanced section). ---
   bankInterest: {
     tier1: { upTo: 300000,    rate: 0.025 },  // 2.5% on first ₹3L
     tier2: { upTo: 25000000,  rate: 0.065 },  // 6.5% ₹3L–₹25Cr
     tier3: { rate: 0.05 },                    // 5% above ₹25Cr
   },
 
-  // --- Index comparison baseline (₹ value at start of comparison window) ---
-  comparisonOpeningBalance: 500000,
+  // --- Index comparison baseline (₹). Edit in the Settings tab. ---
+  comparisonOpeningBalance: 0,
 
   // --- Tax defaults (India FY 2026-27) ---
   tax: {
