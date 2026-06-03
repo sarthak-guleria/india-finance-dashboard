@@ -3020,6 +3020,13 @@ function initInvoices(){renderInvoices();}
 const PAGE_TITLES = {overview:'Overview',cashflow:'Cash Flow',portfolio:'Portfolio',projections:'Projections',inflight:'Inflight',transactions:'Transactions',goals:'Goals',firc:'FIRC / FX Tracker',taxes:'Taxes — FY 2026-27',invoices:'Invoices'};
 const PAGE_INIT   = {overview:initOverview,cashflow:initCashFlow,portfolio:initPortfolio,projections:initProjections,goals:initGoals,firc:initFirc,taxes:initTaxes,invoices:initInvoices};
 
+// Tabs in PAGE_INIT_ONCE get their init function called only on FIRST visit.
+// All other tabs re-init on every visit (they re-read live state like LIVE,
+// getMonthlyExpenses(), localStorage). Use this set sparingly — only for tabs
+// whose init is genuinely expensive (e.g., mounts iframes).
+const PAGE_INIT_ONCE = new Set([]);
+const initializedPages = new Set();
+
 function switchPage(id, el) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -3027,7 +3034,16 @@ function switchPage(id, el) {
   document.getElementById('page-'+id).classList.add('active');
   document.getElementById('pageTitle').textContent = PAGE_TITLES[id];
   window.scrollTo({top:0,behavior:'smooth'});
-  if (PAGE_INIT[id]) PAGE_INIT[id]();
+  if (PAGE_INIT[id]) {
+    if (PAGE_INIT_ONCE.has(id)) {
+      if (!initializedPages.has(id)) {
+        PAGE_INIT[id]();
+        initializedPages.add(id);
+      }
+    } else {
+      PAGE_INIT[id]();
+    }
+  }
   setTimeout(()=>Object.values(CR).forEach(c=>{try{c.resize()}catch(e){}}),80);
   if (id==='transactions') filterTxns();
   if (id==='inflight')     renderInflight();
