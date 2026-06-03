@@ -38,7 +38,7 @@ Follows the existing 10-tab pattern in `Finance_Dashboard.html`:
 - New `<div class="page" id="page-tradingview">` block.
 - New sidebar nav item linking to it.
 - New entries in `PAGE_TITLES` (`tradingview: "Markets"`) and `PAGE_INIT` (`tradingview: initTradingView`).
-- Init must run **once per session**, not on every tab click. CLAUDE.md describes an `initializedPages` Set for this purpose, but it does not currently exist in `Finance_Dashboard.html` — `PAGE_INIT[id]()` is called unconditionally in `switchPage()`. This plan adds the Set as part of the work (small, generically beneficial, aligns code with the documented architecture). Without it, 4+ TradingView iframes would re-mount on every tab visit.
+- Init must run **once per session** for this tab only, not on every tab click. `PAGE_INIT[id]()` is currently called unconditionally in `switchPage()`. The other 8 init functions intentionally re-run each visit (they re-read live state, e.g., `LIVE`, `getMonthlyExpenses()`, localStorage) and changing that globally would freeze their charts at first-visit values. Solution: add an **opt-in** `PAGE_INIT_ONCE = new Set(['tradingview'])` and a small guard in `switchPage()` that consults a runtime `initializedPages` Set only for tabs listed in `PAGE_INIT_ONCE`. All existing tabs keep current behavior; only the Markets tab gets one-shot init.
 
 All HTML/CSS/JS stays inline in `Finance_Dashboard.html`, per the project's no-file-splitting rule.
 
@@ -65,10 +65,10 @@ tradingview: {
 }
 ```
 
-User edits persist to a new `localStorage` key `tv_watchlist_v1` (naming matches `custom_accounts_v1`). On init:
+User edits persist to a new `localStorage` key `tv_state_v1` (naming matches `custom_accounts_v1`). On init:
 
 ```js
-const tvState = JSON.parse(localStorage.getItem('tv_watchlist_v1') || 'null')
+const tvState = JSON.parse(localStorage.getItem('tv_state_v1') || 'null')
               || structuredClone(CONFIG.tradingview);
 ```
 
@@ -80,7 +80,7 @@ const tvState = JSON.parse(localStorage.getItem('tv_watchlist_v1') || 'null')
 │  default): input + Add button, ticker chips,   │
 │  Reset-to-defaults button, format hint link    │
 ├────────────────────────────────────────────────┤
-│  Ticker Tape (embed-widget-tickers.js)        │
+│  Ticker Tape (embed-widget-ticker-tape.js)    │
 ├────────────────────────────────────────────────┤
 │  Main Advanced Chart                           │
 │  (embed-widget-advanced-chart.js)              │
@@ -95,7 +95,17 @@ const tvState = JSON.parse(localStorage.getItem('tv_watchlist_v1') || 'null')
 └────────────────────────────────────────────────┘
 ```
 
-All widgets hard-set `theme: "light"`.
+All widget script URLs follow the pattern `https://s3.tradingview.com/external-embedding/embed-widget-<name>.js`. Exact names:
+- Ticker Tape: `embed-widget-ticker-tape.js`
+- Advanced Chart: `embed-widget-advanced-chart.js`
+- Symbol Overview (one per grid tile): `embed-widget-symbol-overview.js`
+- Economic Calendar: `embed-widget-events.js`
+
+**Theme property is widget-specific** — TradingView is inconsistent here. Per-widget config:
+- Advanced Chart: `theme: "light"`
+- Ticker Tape, Symbol Overview, Economic Calendar: `colorTheme: "light"`
+
+The plan must write per-widget configs, not a single shared one. Each `mountTVWidget(...)` call passes its own config object and runs independently — dropping any single section (e.g., removing the Economic Calendar) is a one-block delete with no cross-section coupling.
 
 ### Widget mount helper
 
@@ -141,7 +151,7 @@ The main chart's symbol is changed inside the TradingView widget itself (it has 
 CONFIG.tradingview  ──┐
                       ├──► tvState ──► mountTVWidget() ──► TradingView iframe
 localStorage          ──┘     ▲
-(tv_watchlist_v1)             │
+(tv_state_v1)             │
                               │
             Symbol manager UI ─┘ (edit → save → re-mount)
 ```
@@ -179,7 +189,7 @@ Manual verification (no test harness exists in this project):
 
 ## Documentation updates
 
-- **CLAUDE.md:** add a one-paragraph section under "Architecture" describing the Markets tab, the `tvState` / `tv_watchlist_v1` model, and the `mountTVWidget()` helper. Also add `tv_watchlist_v1` to the localStorage key table.
+- **CLAUDE.md:** add a one-paragraph section under "Architecture" describing the Markets tab, the `tvState` / `tv_state_v1` model, and the `mountTVWidget()` helper. Also add `tv_state_v1` to the localStorage key table.
 - **README.md:** brief note that the dashboard includes embedded TradingView charts and how to customize the watchlist (via the in-app editor).
 
 ## Open questions
