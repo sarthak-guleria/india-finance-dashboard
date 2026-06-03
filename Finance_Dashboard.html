@@ -3346,7 +3346,40 @@ function initInvoices(){renderInvoices();}
 // SETTINGS TAB
 // ══════════════════════════════════════════
 function initSettings() {
-  // Form population, save, reset wired in subsequent tasks.
+  settingsPopulate();
+  // Clear any stale save status from a previous visit.
+  const s = document.getElementById('setStatus');
+  if (s) { s.textContent = ''; s.className = 'set-status'; }
+}
+
+// Read current effective values (post-IIFE CONFIG + IDX) into the form inputs.
+// Rates stored as decimals (0.025) are shown as percentages (2.5).
+function settingsPopulate() {
+  const v = (id, val) => { const el = document.getElementById(id); if (el != null) el.value = val; };
+
+  v('setOwnerName',         CONFIG.ownerName);
+  v('setPrimaryBankName',   CONFIG.banks.primary.name);
+  v('setPrimaryBankBal',    CONFIG.banks.primary.balance);
+  v('setSecondaryBankName', CONFIG.banks.secondary.name);
+  v('setSecondaryBankBal',  CONFIG.banks.secondary.balance);
+  v('setSalary',            CONFIG.monthlyNetSalary);
+  v('setEth',               CONFIG.holdings.eth);
+  v('setSol',               CONFIG.holdings.sol);
+  v('setUsdc',              CONFIG.holdings.usdc);
+  v('setUsdt',              CONFIG.holdings.usdt);
+  v('setUsdCash',           CONFIG.holdings.usdCash);
+  v('setStakingUsd',        CONFIG.monthlyStakingUSD);
+
+  // Advanced
+  v('setComparisonBal',     CONFIG.comparisonOpeningBalance);
+  v('setIdxNifty',          IDX.nifty);
+  v('setIdxSp',             IDX.sp);
+  v('setBiTier1Cap',        CONFIG.bankInterest.tier1.upTo);
+  v('setBiTier1Rate',       +(CONFIG.bankInterest.tier1.rate * 100).toFixed(4));
+  v('setBiTier2Cap',        CONFIG.bankInterest.tier2.upTo);
+  v('setBiTier2Rate',       +(CONFIG.bankInterest.tier2.rate * 100).toFixed(4));
+  v('setBiTier3Rate',       +(CONFIG.bankInterest.tier3.rate * 100).toFixed(4));
+  v('setTaxPresumptive',    +(CONFIG.tax.presumptiveProfitRate * 100).toFixed(4));
 }
 
 // ══════════════════════════════════════════
