@@ -3137,6 +3137,7 @@ function initInvoices(){renderInvoices();}
 // MARKETS TAB (TradingView)
 // ══════════════════════════════════════════
 function initTradingView() {
+  tvRenderChips();
   tvMountTickerTape();
   tvMountMainChart();
   tvRenderGrid();
@@ -3156,6 +3157,48 @@ function tvMountCalendar() {
       countryFilter: "in,us,eu,gb"
     }
   );
+}
+
+// ---- Symbol manager (chips + add/remove + persist) ----
+function tvRenderChips() {
+  const fields = [
+    { listKey: 'tickerTape',    chipsId: 'tvChipsTape' },
+    { listKey: 'watchlistGrid', chipsId: 'tvChipsGrid' }
+  ];
+  fields.forEach(({ listKey, chipsId }) => {
+    const host = document.getElementById(chipsId);
+    if (!host) return;
+    host.innerHTML = '';
+    tvState[listKey].forEach((sym, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'tv-chip';
+      chip.innerHTML = sym + ' <span class="tv-chip-x" title="Remove">&times;</span>';
+      chip.querySelector('.tv-chip-x').addEventListener('click', () => tvRemoveTicker(listKey, i));
+      host.appendChild(chip);
+    });
+  });
+}
+
+function tvAddTicker(listKey) {
+  const inputId = listKey === 'tickerTape' ? 'tvInputTape' : 'tvInputGrid';
+  const input = document.getElementById(inputId);
+  const sym = (input.value || '').trim().toUpperCase();
+  if (!sym) return;
+  if (tvState[listKey].includes(sym)) { input.value = ''; return; }
+  tvState[listKey].push(sym);
+  saveTVState();
+  input.value = '';
+  tvRenderChips();
+  if (listKey === 'tickerTape')    tvMountTickerTape();
+  if (listKey === 'watchlistGrid') tvRenderGrid();
+}
+
+function tvRemoveTicker(listKey, index) {
+  tvState[listKey].splice(index, 1);
+  saveTVState();
+  tvRenderChips();
+  if (listKey === 'tickerTape')    tvMountTickerTape();
+  if (listKey === 'watchlistGrid') tvRenderGrid();
 }
 
 function tvRenderGrid() {
