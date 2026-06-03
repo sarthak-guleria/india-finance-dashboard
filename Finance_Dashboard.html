@@ -3139,6 +3139,46 @@ function initInvoices(){renderInvoices();}
 function initTradingView() {
   tvMountTickerTape();
   tvMountMainChart();
+  tvRenderGrid();
+}
+
+function tvRenderGrid() {
+  const host = document.getElementById('tvMiniGrid');
+  if (!host) return;
+  host.innerHTML = '';
+  tvState.watchlistGrid.forEach((sym, i) => {
+    const tileId = 'tvMiniTile_' + i;
+    const tile = document.createElement('div');
+    tile.className = 'tv-mini-tile';
+    tile.id = tileId;
+    host.appendChild(tile);
+    mountTVWidget(tileId,
+      'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js',
+      {
+        symbols: [[sym, sym + "|1D"]],
+        chartOnly: false,
+        width: "100%",
+        height: "100%",
+        locale: "en",
+        colorTheme: "light",
+        autosize: true,
+        showVolume: false,
+        showMA: false,
+        hideDateRanges: false,
+        hideMarketStatus: false,
+        hideSymbolLogo: false,
+        scalePosition: "right",
+        scaleMode: "Normal",
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+        fontSize: "10",
+        noTimeScale: false,
+        valuesTracking: "1",
+        changeMode: "price-and-percent",
+        chartType: "area",
+        dateFormat: "yyyy-MM-dd"
+      }
+    );
+  });
 }
 
 function tvMountTickerTape() {
