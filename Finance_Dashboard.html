@@ -3433,6 +3433,35 @@ function settingsCancel() {
   if (s) { s.textContent = 'Changes discarded.'; s.className = 'set-status'; }
 }
 
+// Wipe ALL locally-stored user data and reload to ship-empty defaults.
+// Key list mirrors the localStorage table in CLAUDE.md plus tv_state_v1.
+function settingsReset() {
+  const ok = confirm(
+    "This clears all your data — Settings, bank accounts, transactions, " +
+    "goals, FIRC entries, tax inputs, invoices, and Markets watchlist. " +
+    "The page will reload. Continue?"
+  );
+  if (!ok) return;
+  const KEYS = [
+    'user_settings_v1',
+    'monthly_expenses',
+    'tx_overrides',
+    'manual_entries',
+    'monthly_memos',
+    'inflight_entries',
+    'custom_accounts_v1',
+    'firc_entries',
+    'user_goals',
+    'tax_regime',
+    'cgt_entries',
+    'adv_tax_v1',
+    'invoices_v1',
+    'tv_state_v1'
+  ];
+  KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  location.reload();
+}
+
 // ══════════════════════════════════════════
 // MARKETS TAB (TradingView)
 // ══════════════════════════════════════════
