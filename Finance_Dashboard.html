@@ -3137,7 +3137,21 @@ function initInvoices(){renderInvoices();}
 // MARKETS TAB (TradingView)
 // ══════════════════════════════════════════
 function initTradingView() {
-  // Widget mounts are added in later tasks.
+  tvMountTickerTape();
+}
+
+function tvMountTickerTape() {
+  mountTVWidget('tvTickerTape',
+    'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js',
+    {
+      symbols: tvState.tickerTape.map(s => ({ proName: s, title: s.split(':').pop() })),
+      showSymbolLogo: true,
+      isTransparent: false,
+      displayMode: "adaptive",
+      colorTheme: "light",
+      locale: "en"
+    }
+  );
 }
 
 // ══════════════════════════════════════════
