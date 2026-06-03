@@ -18,13 +18,13 @@ Chosen direction: embed free TradingView widgets. No API key required. Configura
 
 - Add a "Markets" tab to `Finance_Dashboard.html` showing live charts via TradingView widgets.
 - Let the user manage a watchlist of symbols that drives multiple widgets.
-- Match the existing dark theme and single-file architecture.
+- Match the existing light theme and single-file architecture.
 
 ## Non-Goals
 
 - Broker integration (Zerodha, Binance, Alpaca, etc.) — explicitly out of scope.
 - Pulling user data from TradingView (watchlists, alerts, layouts) — not exposed by their API.
-- Theme toggle — dashboard is dark-only.
+- Theme toggle — dashboard is light-only.
 - Mobile optimization beyond what the rest of the dashboard already does.
 - Coupling TradingView widgets to the existing `LIVE` INR-conversion logic.
 - Tracking the user's in-widget chart navigation. Once the main chart mounts, any symbol the user picks inside it is owned by TradingView's own iframe storage; the dashboard does not observe or persist those changes. The `tvState.mainChart` field controls only the *initial* symbol on first mount and after "Reset to defaults".
@@ -38,7 +38,7 @@ Follows the existing 10-tab pattern in `Finance_Dashboard.html`:
 - New `<div class="page" id="page-tradingview">` block.
 - New sidebar nav item linking to it.
 - New entries in `PAGE_TITLES` (`tradingview: "Markets"`) and `PAGE_INIT` (`tradingview: initTradingView`).
-- Init runs once via the existing `initializedPages` Set — important because TradingView widgets are heavy and should lazy-load on first visit only.
+- Init must run **once per session**, not on every tab click. CLAUDE.md describes an `initializedPages` Set for this purpose, but it does not currently exist in `Finance_Dashboard.html` — `PAGE_INIT[id]()` is called unconditionally in `switchPage()`. This plan adds the Set as part of the work (small, generically beneficial, aligns code with the documented architecture). Without it, 4+ TradingView iframes would re-mount on every tab visit.
 
 All HTML/CSS/JS stays inline in `Finance_Dashboard.html`, per the project's no-file-splitting rule.
 
@@ -95,7 +95,7 @@ const tvState = JSON.parse(localStorage.getItem('tv_watchlist_v1') || 'null')
 └────────────────────────────────────────────────┘
 ```
 
-All widgets hard-set `theme: "dark"`.
+All widgets hard-set `theme: "light"`.
 
 ### Widget mount helper
 
@@ -159,7 +159,7 @@ No coupling to `LIVE`, `HOLDINGS`, `CUSTOM_ACCS`, or any other dashboard state.
 Manual verification (no test harness exists in this project):
 
 1. Open `Finance_Dashboard.html` in a browser. Click Markets tab.
-2. Confirm all four widgets render with the dark theme and default symbols.
+2. Confirm all four widgets render with the light theme and default symbols.
 3. Open Edit watchlist, add `BINANCE:ADAUSDT` to ticker tape → confirm it appears in the scrolling tape.
 4. Remove a ticker from the grid → confirm the corresponding mini-chart disappears.
 5. Click Reset to defaults → confirm chips and widgets revert.
