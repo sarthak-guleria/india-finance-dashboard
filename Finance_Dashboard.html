@@ -315,6 +315,39 @@ body:not(.privacy) .holding-inr { transition: filter 0.25s ease; }
 .txn-group-row td{background:var(--s2)!important;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;padding:6px 14px}
 .txn-group-total{float:right;font-weight:700;color:var(--text)}
 
+/* SETTINGS TAB */
+.set-page{max-width:760px;margin:0 auto;padding-bottom:60px}
+.set-section{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+.set-section-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.8px}
+.set-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.set-row:last-child{margin-bottom:0}
+.set-field{display:flex;flex-direction:column;flex:1;min-width:160px}
+.set-field-label{font-size:11.5px;font-weight:500;color:var(--muted);margin-bottom:5px}
+.set-field-suffix{font-size:11px;color:var(--faint);margin-left:6px}
+.set-input{padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);width:100%}
+.set-input:focus{outline:none;border-color:var(--blue);background:var(--card)}
+.set-note{font-size:12px;color:var(--muted);margin-top:4px;font-style:italic}
+.set-advanced{margin-bottom:16px}
+.set-advanced-head{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;box-shadow:var(--shadow-sm)}
+.set-advanced-title{font-size:13px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.8px}
+.set-advanced-caret{transition:transform 0.15s;color:var(--muted)}
+.set-advanced.open .set-advanced-caret{transform:rotate(90deg)}
+.set-advanced-body{display:none;margin-top:12px}
+.set-advanced.open .set-advanced-body{display:block}
+.set-actions{display:flex;gap:10px;align-items:center;margin-top:18px}
+.set-btn{padding:10px 18px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:background 0.1s}
+.set-btn:hover{background:var(--s2)}
+.set-btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.set-btn-primary:hover{background:#1E40AF}
+.set-btn-danger{background:var(--card);color:var(--red);border-color:var(--red)}
+.set-btn-danger:hover{background:var(--red);color:#fff}
+.set-status{font-size:12.5px;color:var(--muted);margin-left:8px}
+.set-status.ok{color:var(--green)}
+.set-status.err{color:var(--red)}
+.set-danger-zone{background:var(--card);border:1px solid var(--red);border-radius:12px;padding:18px 20px;margin-top:30px;box-shadow:var(--shadow-sm)}
+.set-danger-title{font-size:13px;font-weight:700;color:var(--red);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px}
+.set-danger-body{font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+
 /* MARKETS TAB */
 .tv-section{margin-bottom:18px}
 .tv-section-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
@@ -1273,7 +1306,173 @@ body:not(.privacy) .holding-inr { transition: filter 0.25s ease; }
   </div>
 
   <div class="page" id="page-settings">
-    <!-- Settings form, populated and styled in subsequent tasks. -->
+   <div class="set-page">
+
+    <div class="set-section">
+      <div class="set-section-title">Identity</div>
+      <div class="set-row">
+        <div class="set-field">
+          <label class="set-field-label" for="setOwnerName">Owner name</label>
+          <input type="text" class="set-input" id="setOwnerName" placeholder="Your Name">
+        </div>
+      </div>
+    </div>
+
+    <div class="set-section">
+      <div class="set-section-title">Banks</div>
+      <div class="set-row">
+        <div class="set-field">
+          <label class="set-field-label" for="setPrimaryBankName">Primary bank name</label>
+          <input type="text" class="set-input" id="setPrimaryBankName">
+        </div>
+        <div class="set-field">
+          <label class="set-field-label" for="setPrimaryBankBal">Primary balance (₹)</label>
+          <input type="number" class="set-input" id="setPrimaryBankBal" min="0" step="1">
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="set-field">
+          <label class="set-field-label" for="setSecondaryBankName">Secondary bank name</label>
+          <input type="text" class="set-input" id="setSecondaryBankName">
+        </div>
+        <div class="set-field">
+          <label class="set-field-label" for="setSecondaryBankBal">Secondary balance (₹)</label>
+          <input type="number" class="set-input" id="setSecondaryBankBal" min="0" step="1">
+        </div>
+      </div>
+      <div class="set-note">Add more accounts via "+ Add Account" on the Overview tab.</div>
+    </div>
+
+    <div class="set-section">
+      <div class="set-section-title">Income</div>
+      <div class="set-row">
+        <div class="set-field">
+          <label class="set-field-label" for="setSalary">Monthly net salary (₹)</label>
+          <input type="number" class="set-input" id="setSalary" min="0" step="1">
+        </div>
+      </div>
+      <div class="set-note">Monthly expenses are edited on the Projections tab.</div>
+    </div>
+
+    <div class="set-section">
+      <div class="set-section-title">Crypto Holdings (exchange-side defaults)</div>
+      <div class="set-row">
+        <div class="set-field">
+          <label class="set-field-label" for="setEth">ETH</label>
+          <input type="number" class="set-input" id="setEth" min="0" step="0.0001">
+        </div>
+        <div class="set-field">
+          <label class="set-field-label" for="setSol">SOL</label>
+          <input type="number" class="set-input" id="setSol" min="0" step="0.0001">
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="set-field">
+          <label class="set-field-label" for="setUsdc">USDC</label>
+          <input type="number" class="set-input" id="setUsdc" min="0" step="0.01">
+        </div>
+        <div class="set-field">
+          <label class="set-field-label" for="setUsdt">USDT</label>
+          <input type="number" class="set-input" id="setUsdt" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="set-field">
+          <label class="set-field-label" for="setUsdCash">USD cash</label>
+          <input type="number" class="set-input" id="setUsdCash" min="0" step="0.01">
+        </div>
+        <div class="set-field">
+          <label class="set-field-label" for="setStakingUsd">Monthly staking (USD)</label>
+          <input type="number" class="set-input" id="setStakingUsd" min="0" step="0.01">
+        </div>
+      </div>
+    </div>
+
+    <div class="set-advanced" id="setAdvanced">
+      <div class="set-advanced-head" onclick="document.getElementById('setAdvanced').classList.toggle('open')">
+        <div class="set-advanced-title">Advanced</div>
+        <svg class="set-advanced-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="set-advanced-body">
+
+        <div class="set-section">
+          <div class="set-section-title">Index baseline &amp; returns</div>
+          <div class="set-row">
+            <div class="set-field">
+              <label class="set-field-label" for="setComparisonBal">Comparison opening balance (₹)</label>
+              <input type="number" class="set-input" id="setComparisonBal" min="0" step="1">
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="set-field">
+              <label class="set-field-label" for="setIdxNifty">Nifty assumed annual return (%)</label>
+              <input type="number" class="set-input" id="setIdxNifty" min="0" step="0.1">
+            </div>
+            <div class="set-field">
+              <label class="set-field-label" for="setIdxSp">S&amp;P assumed annual return (%)</label>
+              <input type="number" class="set-input" id="setIdxSp" min="0" step="0.1">
+            </div>
+          </div>
+        </div>
+
+        <div class="set-section">
+          <div class="set-section-title">Bank interest schedule</div>
+          <div class="set-row">
+            <div class="set-field">
+              <label class="set-field-label" for="setBiTier1Cap">Tier 1: up to (₹)</label>
+              <input type="number" class="set-input" id="setBiTier1Cap" min="0" step="100">
+            </div>
+            <div class="set-field">
+              <label class="set-field-label" for="setBiTier1Rate">Tier 1: rate (%)</label>
+              <input type="number" class="set-input" id="setBiTier1Rate" min="0" step="0.1">
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="set-field">
+              <label class="set-field-label" for="setBiTier2Cap">Tier 2: up to (₹)</label>
+              <input type="number" class="set-input" id="setBiTier2Cap" min="0" step="100">
+            </div>
+            <div class="set-field">
+              <label class="set-field-label" for="setBiTier2Rate">Tier 2: rate (%)</label>
+              <input type="number" class="set-input" id="setBiTier2Rate" min="0" step="0.1">
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="set-field">
+              <label class="set-field-label" for="setBiTier3Rate">Tier 3 (above tier 2 cap): rate (%)</label>
+              <input type="number" class="set-input" id="setBiTier3Rate" min="0" step="0.1">
+            </div>
+          </div>
+        </div>
+
+        <div class="set-section">
+          <div class="set-section-title">Tax</div>
+          <div class="set-row">
+            <div class="set-field">
+              <label class="set-field-label" for="setTaxPresumptive">Presumptive profit rate (44AD, %)</label>
+              <input type="number" class="set-input" id="setTaxPresumptive" min="0" max="100" step="0.1">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="set-actions">
+      <button class="set-btn set-btn-primary" id="setSaveBtn" onclick="settingsSave()">Save changes</button>
+      <button class="set-btn" id="setCancelBtn" onclick="settingsCancel()">Cancel</button>
+      <span class="set-status" id="setStatus"></span>
+    </div>
+
+    <div class="set-danger-zone">
+      <div class="set-danger-title">Danger zone</div>
+      <div class="set-danger-body">
+        Wipe all locally-stored data — Settings, bank accounts, transactions, goals, FIRC entries, tax inputs, invoices, and Markets watchlist. The page will reload.
+      </div>
+      <button class="set-btn set-btn-danger" id="setResetBtn" onclick="settingsReset()">Reset everything</button>
+    </div>
+
+   </div>
   </div>
 
 </main>
