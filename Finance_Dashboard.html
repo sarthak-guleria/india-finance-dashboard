@@ -1225,6 +1225,26 @@ const CONFIG = {
     defaultRegime: "new",          // "new" | "old"
     presumptiveProfitRate: 0.06,   // 6% digital, 8% cash (44AD)
   },
+
+  // --- Markets tab (TradingView widgets) ---
+  // Use TradingView's EXCHANGE:SYMBOL format. Find symbols at
+  // https://www.tradingview.com/symbols/  (edit these, or use the in-app editor)
+  tradingview: {
+    tickerTape: [
+      "BINANCE:BTCUSDT",
+      "BINANCE:ETHUSDT",
+      "FX_IDC:USDINR",
+      "NSE:NIFTY",
+      "FOREXCOM:SPXUSD"
+    ],
+    mainChart: "BINANCE:BTCUSDT",
+    watchlistGrid: [
+      "BINANCE:BTCUSDT",
+      "BINANCE:ETHUSDT",
+      "BINANCE:SOLUSDT",
+      "NSE:NIFTY"
+    ]
+  },
 };
 
 // ══════════════════════════════════════════
