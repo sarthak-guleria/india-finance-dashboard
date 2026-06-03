@@ -369,6 +369,10 @@ body:not(.privacy) .holding-inr { transition: filter 0.25s ease; }
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="19" x2="11" y2="19"/></svg>
       Invoices
     </div>
+    <div class="nav-item" onclick="switchPage('tradingview',this)">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Markets
+    </div>
   </nav>
   <div class="sidebar-footer">
     <div class="rate-row">
@@ -1179,6 +1183,10 @@ body:not(.privacy) .holding-inr { transition: filter 0.25s ease; }
       <div style="font-size:14px;font-weight:600;margin-bottom:6px">No goals yet</div>
       <div style="font-size:12px">Add your first financial goal above — retirement, travel, emergency fund…</div>
     </div>
+  </div>
+
+  <div class="page" id="page-tradingview">
+    <!-- Symbol manager, ticker tape, advanced chart, mini-chart grid, and economic calendar are added in later tasks. -->
   </div>
 
 </main>
@@ -3047,16 +3055,23 @@ function renderInvoices(){
 function initInvoices(){renderInvoices();}
 
 // ══════════════════════════════════════════
+// MARKETS TAB (TradingView)
+// ══════════════════════════════════════════
+function initTradingView() {
+  // Widget mounts are added in later tasks.
+}
+
+// ══════════════════════════════════════════
 // PAGE SWITCHER
 // ══════════════════════════════════════════
-const PAGE_TITLES = {overview:'Overview',cashflow:'Cash Flow',portfolio:'Portfolio',projections:'Projections',inflight:'Inflight',transactions:'Transactions',goals:'Goals',firc:'FIRC / FX Tracker',taxes:'Taxes — FY 2026-27',invoices:'Invoices'};
-const PAGE_INIT   = {overview:initOverview,cashflow:initCashFlow,portfolio:initPortfolio,projections:initProjections,goals:initGoals,firc:initFirc,taxes:initTaxes,invoices:initInvoices};
+const PAGE_TITLES = {overview:'Overview',cashflow:'Cash Flow',portfolio:'Portfolio',projections:'Projections',inflight:'Inflight',transactions:'Transactions',goals:'Goals',firc:'FIRC / FX Tracker',taxes:'Taxes — FY 2026-27',invoices:'Invoices',tradingview:'Markets'};
+const PAGE_INIT   = {overview:initOverview,cashflow:initCashFlow,portfolio:initPortfolio,projections:initProjections,goals:initGoals,firc:initFirc,taxes:initTaxes,invoices:initInvoices,tradingview:initTradingView};
 
 // Tabs in PAGE_INIT_ONCE get their init function called only on FIRST visit.
 // All other tabs re-init on every visit (they re-read live state like LIVE,
 // getMonthlyExpenses(), localStorage). Use this set sparingly — only for tabs
 // whose init is genuinely expensive (e.g., mounts iframes).
-const PAGE_INIT_ONCE = new Set([]);
+const PAGE_INIT_ONCE = new Set(['tradingview']);
 const initializedPages = new Set();
 
 function switchPage(id, el) {
