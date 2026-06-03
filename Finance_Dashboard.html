@@ -3138,6 +3138,7 @@ function initInvoices(){renderInvoices();}
 // ══════════════════════════════════════════
 function initTradingView() {
   tvMountTickerTape();
+  tvMountMainChart();
 }
 
 function tvMountTickerTape() {
@@ -3150,6 +3151,29 @@ function tvMountTickerTape() {
       displayMode: "adaptive",
       colorTheme: "light",
       locale: "en"
+    }
+  );
+}
+
+function tvMountMainChart() {
+  mountTVWidget('tvMainChart',
+    'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js',
+    {
+      autosize: true,
+      symbol: tvState.mainChart,
+      interval: "D",
+      timezone: "Asia/Kolkata",
+      theme: "light",
+      style: "1",
+      locale: "en",
+      enable_publishing: false,
+      withdateranges: true,
+      hide_side_toolbar: false,
+      allow_symbol_change: true,
+      details: false,
+      hotlist: false,
+      calendar: false,
+      support_host: "https://www.tradingview.com"
     }
   );
 }
