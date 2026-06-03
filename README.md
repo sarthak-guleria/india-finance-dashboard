@@ -81,7 +81,7 @@ attachments can push you over.
 
 - **Different bank tiers?** Edit `CONFIG.bankInterest`.
 - **Different exchange?** The `holdings` shape (eth/sol/usdCash/usdc/usdt)
-  matches what Kraken exposes, but any exchange with these tokens works.
+  matches what Exchange exposes, but any exchange with these tokens works.
   Update the quantities in `CONFIG.holdings`.
 - **More wallets / sub-accounts?** Use the "+ Add Account" button on
   the Overview tab — saved to localStorage, no code edit needed.
