@@ -1978,15 +1978,15 @@ function initCashFlow() {
   const pb=document.getElementById('progBars');
   if(!pb.dataset.built){pb.dataset.built='1';
     const data=[
-      {l:'Shopping',a:94701,c:'#1D4ED8'},{l:'Other',a:34981,c:'#0284C7'},
-      {l:'Utilities',a:17964,c:'#D97706'},{l:'Operating Costs',a:3540,c:'#0F766E'},
-      {l:'Healthcare',a:4854,c:'#DC2626'},{l:'Subscriptions',a:3867,c:'#7C3AED'},
-      {l:'Travel',a:3312,c:'#C2410C'},{l:'Transfers',a:16796,c:'#15803D'},
-      {l:'Groceries',a:1682,c:'#BE185D'},{l:'Food & Dining',a:1047,c:'#A8A29E'},
+      {l:'Housing',a:50000,c:'#1D4ED8'},{l:'Transfers',a:10000,c:'#15803D'},
+      {l:'Other',a:5000,c:'#0284C7'},{l:'Groceries',a:4550,c:'#BE185D'},
+      {l:'Utilities',a:3899,c:'#D97706'},{l:'Education',a:2999,c:'#7C3AED'},
+      {l:'Insurance',a:2400,c:'#DC2626'},{l:'Transport',a:2300,c:'#C2410C'},
+      {l:'Shopping',a:2160,c:'#0F766E'},{l:'Dining',a:1620,c:'#A8A29E'},
     ];
     data.forEach(e=>{pb.innerHTML+=`<div class="prog-row">
       <span class="prog-label">${e.l}</span>
-      <div class="prog-track"><div class="prog-fill" style="width:${(e.a/94701*100).toFixed(1)}%;background:${e.c}"></div></div>
+      <div class="prog-track"><div class="prog-fill" style="width:${(e.a/50000*100).toFixed(1)}%;background:${e.c}"></div></div>
       <span class="prog-val">${INR(e.a)}</span></div>`;});
   }
 }
