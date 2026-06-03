@@ -18,6 +18,7 @@ no server, no account. Open the HTML file in any modern browser.
 - **FIRC** — Log foreign-remittance certificates (with file attachments).
 - **Taxes** — India FY 2026-27 slabs, 44AD presumptive, advance tax, CGT.
 - **Invoices** — Issue and track invoices; gross receipts feed into tax.
+- **Markets** — Embedded TradingView widgets (ticker tape, advanced chart, mini-chart grid, economic calendar). Watchlist editable in-app.
 
 ## Quickstart
 
@@ -44,7 +45,7 @@ invoices, goals, FIRC entries, advance tax, custom accounts/wallets.
 ## Architecture (short)
 
 - Single HTML file with inline CSS and JS. No build, no framework.
-- 10 tabs, each a `<div class="page">`. Switching is handled by `switchPage(id)`.
+- 11 tabs, each a `<div class="page">`. Switching is handled by `switchPage(id)`.
 - All Chart.js instances live in a `CR = {}` registry, recreated via `mkChart`.
 - Live rates fetched on load and every 5 minutes from multiple
   CORS-friendly endpoints (jsdelivr currency-api, Frankfurter, Binance,

@@ -27,12 +27,15 @@ into separate files unless explicitly asked.
 
 ### Page system
 
-Ten tabs, each a `<div class="page" id="page-{id}">`. Switching calls
+Eleven tabs, each a `<div class="page" id="page-{id}">`. Switching calls
 `switchPage(id)` which:
 
 1. Hides all `.page` divs, shows the target.
-2. Calls `PAGE_INIT[id]()` **once** on first visit (tracked via the
-   `initializedPages` Set).
+2. Calls `PAGE_INIT[id]()`. By default this runs **every visit** (most
+   init functions re-read live state). Tabs listed in `PAGE_INIT_ONCE`
+   are init'd only on first visit, tracked via the `initializedPages`
+   Set — currently just the Markets tab, whose iframes are too heavy
+   to re-mount on every click.
 3. Updates `document.title` and `.page-title` via `PAGE_TITLES`.
 
 ### Chart registry
@@ -40,6 +43,20 @@ Ten tabs, each a `<div class="page" id="page-{id}">`. Switching calls
 All Chart.js instances are stored in `CR = {}`. Always use
 `mkChart(id, cfg)` — it destroys the old instance before creating the new
 one, preventing canvas-reuse errors.
+
+### Markets tab (TradingView widgets)
+
+Embeds free TradingView widgets (no API key). State lives in
+`CONFIG.tradingview` (defaults) and `tvState` (in-memory, persisted to
+`localStorage['tv_state_v1']`). `mountTVWidget(containerId, scriptSrc, config)`
+is the destroy-and-recreate primitive — same role `mkChart()` plays for
+Chart.js. Watch out for TradingView's inconsistent theme property: the
+Advanced Chart uses `theme`, the other widgets use `colorTheme`.
+
+`initTradingView()` is registered in `PAGE_INIT_ONCE` so it runs only on the
+first visit to the tab — re-mounting four iframes on every click is too slow.
+`PAGE_INIT_ONCE` is opt-in; all other tabs continue to re-init on each visit
+because they read live state (`LIVE`, `getMonthlyExpenses()`, localStorage).
 
 ### Live rates
 
@@ -106,6 +123,7 @@ tiered savings rate can be expressed by editing CONFIG.
 | `cgt_entries` | Crypto capital gains entries. |
 | `adv_tax_v1` | Advance tax paid per quarter + base64 receipts. |
 | `invoices_v1` | Invoice records. |
+| `tv_state_v1` | Markets tab state (ticker tape + watchlist grid + initial main-chart symbol). |
 
 Base64 storage of attachments shares the ~5MB localStorage cap.
 
